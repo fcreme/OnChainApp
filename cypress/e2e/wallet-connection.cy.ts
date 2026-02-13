@@ -9,7 +9,7 @@ describe('Wallet Connection', () => {
   })
 
   it('should display basic page elements', () => {
-    cy.get('h1').should('contain', 'Web3 Challenge Dashboard')
+    cy.get('h1').should('contain', 'TokenFlow')
     cy.get('h6').should('contain', 'Interactúa con tokens ERC20 en la red Sepolia')
   })
 

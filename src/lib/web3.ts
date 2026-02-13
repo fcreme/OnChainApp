@@ -1,5 +1,5 @@
 // src/lib/web3.ts
-import { http, createConfig } from 'wagmi';
+import { http, createConfig, fallback } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { 
   injected, 
@@ -11,7 +11,7 @@ import {
 
 const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo'
 
-// Múltiples RPC URLs para mejor confiabilidad en testnet
+// Multiple RPC URLs for better testnet reliability
 const sepoliaRpcUrls = [
   import.meta.env.VITE_SEPOLIA_RPC_URL,
   'https://rpc.sepolia.org',
@@ -22,42 +22,44 @@ const sepoliaRpcUrls = [
 export const config = createConfig({
   chains: [sepolia],
   connectors: [
-    // MetaMask (más compatible con Ethereum)
     metaMask(),
-    
-    // Injected wallets (incluye Phantom si soporta Ethereum)
+
+    // Injected wallets (includes Phantom if it supports Ethereum)
     injected({
       target: 'metaMask',
       shimDisconnect: true,
     }),
     
-    // WalletConnect (soporta múltiples wallets)
     walletConnect({ 
       projectId: walletConnectProjectId,
       showQrModal: true,
       metadata: {
-        name: 'Web3 Challenge',
-        description: 'DeFi testing application',
-        url: 'https://web3-challenge-react-blockchain-int.vercel.app',
+        name: 'Onchain',
+        description: 'Modern DeFi token management interface',
+        url: 'https://tokenflow-app.vercel.app',
         icons: ['https://avatars.githubusercontent.com/u/37784886']
       }
     }),
     
-    // Coinbase Wallet
     coinbaseWallet({
-      appName: 'Web3 Challenge',
+      appName: 'Onchain',
       appLogoUrl: 'https://avatars.githubusercontent.com/u/37784886'
     }),
     
-    // Safe Wallet
     safe()
   ],
   transports: {
-    [sepolia.id]: http(sepoliaRpcUrls[0] || 'https://rpc.sepolia.org'),
+    [sepolia.id]: fallback([
+      http('https://ethereum-sepolia-rpc.publicnode.com'),
+      http('https://sepolia.drpc.org'),
+      http('https://rpc.sepolia.org'),
+      ...(import.meta.env.VITE_SEPOLIA_RPC_URL ? [http(import.meta.env.VITE_SEPOLIA_RPC_URL)] : []),
+    ]),
   },
+  pollingInterval: 4_000,
 });
 
-// Configuración específica para testnet
+// Testnet-specific configuration
 export const TESTNET_CONFIG = {
   chainId: sepolia.id,
   chainName: 'Sepolia Testnet',
@@ -71,29 +73,29 @@ export const TESTNET_CONFIG = {
   faucetUrl: 'https://sepoliafaucet.com/',
 }
 
-// Lista de wallets recomendadas para Ethereum
+// Recommended wallets for Ethereum
 export const RECOMMENDED_WALLETS = [
   {
     name: 'MetaMask',
-    description: 'La wallet más popular para Ethereum',
+    description: 'The most popular Ethereum wallet',
     url: 'https://metamask.io/',
     icon: '🦊'
   },
   {
     name: 'WalletConnect',
-    description: 'Conecta cualquier wallet compatible',
+    description: 'Connect any compatible wallet',
     url: 'https://walletconnect.com/',
     icon: '🔗'
   },
   {
     name: 'Coinbase Wallet',
-    description: 'Wallet oficial de Coinbase',
+    description: 'Official Coinbase wallet',
     url: 'https://www.coinbase.com/wallet',
     icon: '🪙'
   },
   {
     name: 'Trust Wallet',
-    description: 'Wallet móvil popular',
+    description: 'Popular mobile wallet',
     url: 'https://trustwallet.com/',
     icon: '🛡️'
   }

@@ -1,4 +1,4 @@
-# 🧪 Guía de Testnet - Web3 Challenge
+# Testnet Guide - TokenFlow
 
 ## ¿Qué es Testnet?
 

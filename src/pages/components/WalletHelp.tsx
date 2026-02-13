@@ -1,21 +1,21 @@
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  Typography, 
-  Box, 
-  Card, 
-  CardContent, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
   ListItemText,
   Chip,
   Divider
 } from '@mui/material'
-import { 
+import {
   AccountBalanceWallet as WalletIcon,
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
@@ -31,22 +31,22 @@ interface WalletHelpProps {
 
 export default function WalletHelp({ open, onClose }: WalletHelpProps) {
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       maxWidth="md"
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '16px',
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)'
+          borderRadius: '8px',
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)'
         }
       }}
     >
-      <DialogTitle sx={{ 
+      <DialogTitle sx={{
         pb: 1,
         display: 'flex',
         alignItems: 'center',
@@ -55,7 +55,7 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <WalletIcon sx={{ color: 'primary.main', fontSize: 28 }} />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Wallets Compatibles
+            Compatible Wallets
           </Typography>
         </Box>
         <Button
@@ -65,56 +65,57 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
           <CloseIcon />
         </Button>
       </DialogTitle>
-      
+
       <DialogContent sx={{ pt: 2 }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
-            Esta aplicación está diseñada para <strong>Ethereum Sepolia Testnet</strong>. 
-            Necesitas una wallet compatible con Ethereum para conectarte.
+            This application is designed for the <strong>Ethereum Sepolia Testnet</strong>.
+            You need an Ethereum-compatible wallet to connect.
           </Typography>
-          
-          <Card sx={{ 
+
+          <Card sx={{
             mb: 3,
-            background: 'rgba(255, 152, 0, 0.1)',
-            border: '1px solid rgba(255, 152, 0, 0.3)'
+            background: 'rgba(255, 179, 71, 0.1)',
+            border: '1px solid rgba(255, 179, 71, 0.3)'
           }}>
             <CardContent sx={{ py: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <WarningIcon sx={{ color: '#ff9800' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#ff9800' }}>
-                  Nota importante
+                <WarningIcon sx={{ color: 'warning.main' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'warning.main' }}>
+                  Important note
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                <strong>Phantom Wallet</strong> es principalmente para Solana. Si tienes problemas, 
-                considera usar una wallet específica para Ethereum como MetaMask.
+                <strong>Phantom Wallet</strong> is primarily for Solana. If you experience issues,
+                consider using an Ethereum-specific wallet like MetaMask.
               </Typography>
             </CardContent>
           </Card>
         </Box>
 
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-          Wallets Recomendadas
+          Recommended Wallets
         </Typography>
-        
+
         <List sx={{ p: 0 }}>
           {RECOMMENDED_WALLETS.map((wallet, index) => (
             <Box key={wallet.name}>
-              <ListItem sx={{ 
-                px: 0, 
+              <ListItem sx={{
+                px: 0,
                 py: 2,
-                borderRadius: '12px',
+                borderRadius: '8px',
                 mb: 1,
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                transition: 'all 0.3s ease',
+                background: (theme) => theme.palette.custom.subtleBg,
+                border: 1,
+                borderColor: 'divider',
+                transition: 'all 0.15s ease',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  background: (theme) => theme.palette.custom.hoverBg,
+                  borderColor: (theme) => theme.palette.custom.subtleBorder,
                 }
               }}>
                 <ListItemIcon sx={{ minWidth: 48 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     fontSize: '2rem',
                     display: 'flex',
                     alignItems: 'center',
@@ -122,7 +123,7 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
                     width: 40,
                     height: 40,
                     borderRadius: '8px',
-                    background: 'rgba(102, 126, 234, 0.1)'
+                    background: 'rgba(20, 184, 166, 0.1)'
                   }}>
                     {wallet.icon}
                   </Box>
@@ -133,10 +134,10 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                         {wallet.name}
                       </Typography>
-                      <Chip 
-                        label="Recomendado" 
-                        size="small" 
-                        color="success" 
+                      <Chip
+                        label="Recommended"
+                        size="small"
+                        color="success"
                         sx={{ fontSize: '0.65rem', height: 20 }}
                       />
                     </Box>
@@ -150,21 +151,10 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<LinkIcon />}
+                  startIcon={<LinkIcon sx={{ fontSize: '0.875rem !important' }} />}
                   onClick={() => window.open(wallet.url, '_blank')}
-                  sx={{
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontSize: '0.75rem',
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    color: 'text.primary',
-                    '&:hover': {
-                      borderColor: 'rgba(255, 255, 255, 0.4)',
-                      background: 'rgba(255, 255, 255, 0.05)'
-                    }
-                  }}
                 >
-                  Instalar
+                  Install
                 </Button>
               </ListItem>
               {index < RECOMMENDED_WALLETS.length - 1 && (
@@ -174,109 +164,50 @@ export default function WalletHelp({ open, onClose }: WalletHelpProps) {
           ))}
         </List>
 
-        <Box sx={{ mt: 4, p: 3, borderRadius: '12px', background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.2)' }}>
+        <Box sx={{ mt: 4, p: 3, borderRadius: '8px', background: 'rgba(164, 207, 94, 0.1)', border: '1px solid rgba(164, 207, 94, 0.2)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <CheckIcon sx={{ color: '#4caf50' }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#4caf50' }}>
-              Pasos para conectar
+            <CheckIcon sx={{ color: '#a4cf5e' }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#a4cf5e' }}>
+              How to connect
             </Typography>
           </Box>
           <List sx={{ p: 0 }}>
-            <ListItem sx={{ px: 0, py: 0.5 }}>
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <Box sx={{ 
-                  width: 20, 
-                  height: 20, 
-                  borderRadius: '50%', 
-                  background: '#4caf50',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>
-                  1
-                </Box>
-              </ListItemIcon>
-              <ListItemText primary="Instala una wallet compatible con Ethereum (MetaMask recomendado)" />
-            </ListItem>
-            <ListItem sx={{ px: 0, py: 0.5 }}>
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <Box sx={{ 
-                  width: 20, 
-                  height: 20, 
-                  borderRadius: '50%', 
-                  background: '#4caf50',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>
-                  2
-                </Box>
-              </ListItemIcon>
-              <ListItemText primary="Configura la red Sepolia Testnet en tu wallet" />
-            </ListItem>
-            <ListItem sx={{ px: 0, py: 0.5 }}>
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <Box sx={{ 
-                  width: 20, 
-                  height: 20, 
-                  borderRadius: '50%', 
-                  background: '#4caf50',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>
-                  3
-                </Box>
-              </ListItemIcon>
-              <ListItemText primary="Obtén ETH de prueba de un faucet" />
-            </ListItem>
-            <ListItem sx={{ px: 0, py: 0.5 }}>
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <Box sx={{ 
-                  width: 20, 
-                  height: 20, 
-                  borderRadius: '50%', 
-                  background: '#4caf50',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>
-                  4
-                </Box>
-              </ListItemIcon>
-              <ListItemText primary="Conecta tu wallet a la aplicación" />
-            </ListItem>
+            {[
+              'Install an Ethereum-compatible wallet (MetaMask recommended)',
+              'Set up the Sepolia Testnet network in your wallet',
+              'Get test ETH from a faucet',
+              'Connect your wallet to the application'
+            ].map((step, i) => (
+              <ListItem key={i} sx={{ px: 0, py: 0.5 }}>
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <Box sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: '50%',
+                    background: '#a4cf5e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    color: 'background.default',
+                    fontWeight: 'bold'
+                  }}>
+                    {i + 1}
+                  </Box>
+                </ListItemIcon>
+                <ListItemText primary={step} />
+              </ListItem>
+            ))}
           </List>
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button 
+        <Button
           onClick={onClose}
           variant="contained"
-          sx={{
-            borderRadius: '12px',
-            px: 4,
-            py: 1.5,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-            }
-          }}
         >
-          Entendido
+          Got it
         </Button>
       </DialogActions>
     </Dialog>

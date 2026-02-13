@@ -1,30 +1,67 @@
 import { useAppStore } from '../store/useAppStore'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { sepolia } from 'wagmi/chains'
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Card, 
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
   CardContent,
   Chip,
-  Fade
+  Skeleton,
+  IconButton,
+  Tooltip,
 } from '@mui/material'
-import { 
+import {
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,
-  TrendingUp as TrendingUpIcon
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material'
+import { useCustomTokensStore } from '../../stores/useCustomTokensStore'
+import AddTokenDialog from './AddTokenDialog'
+
+function formatBalance(value: string): string {
+  const num = parseFloat(value)
+  if (isNaN(num)) return '0.00'
+  if (num === 0) return '0.00'
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  })
+}
 
 export default function BalancesCard(){
-  const { 
-    balances, 
-    fetchBalances, 
-    isConnected, 
-    chainId 
+  const {
+    balances,
+    fetchBalances,
+    isConnected,
+    chainId,
+    isLoadingBalances
   } = useAppStore()
+  const customTokens = useCustomTokensStore((s) => s.tokens)
+  const removeToken = useCustomTokensStore((s) => s.removeToken)
+  const [addTokenOpen, setAddTokenOpen] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id
+
+  const checkScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 0)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }
+
+  const scroll = (dir: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir === 'left' ? -220 : 220, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     if (isConnected && chainId === sepolia.id) {
@@ -32,213 +69,317 @@ export default function BalancesCard(){
     }
   }, [isConnected, chainId, fetchBalances])
 
-  return (
-    <Box>
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
-        alignItems: { xs: 'flex-start', sm: 'center' }, 
-        gap: { xs: 2, sm: 0 },
-        mb: 4 
+  useEffect(() => {
+    checkScroll()
+    const el = scrollRef.current
+    if (!el) return
+    const ro = new ResizeObserver(checkScroll)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [customTokens.length, isLoadingBalances])
+
+  if (!isConnected) {
+    return (
+      <Box sx={{
+        textAlign: 'center',
+        py: 4,
+        bgcolor: 'background.paper',
+        borderRadius: '8px',
+        border: 1,
+        borderColor: 'divider',
       }}>
-        <Typography variant="h5" component="h3" sx={{ 
-          fontWeight: 700,
-          fontSize: { xs: '1.5rem', sm: '1.75rem' },
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5
-        }}>
-          <BalanceIcon sx={{ 
-            fontSize: { xs: '1.6rem', sm: '1.8rem' },
-            color: 'primary.main'
-          }} />
-          Token Balances
+        <BalanceIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1, opacity: 0.5 }} />
+        <Typography color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+          Connect your wallet to see balances
         </Typography>
-        {isConnected && !isWrongNetwork && (
-          <Button
-            data-testid="refresh-balances"
-            onClick={fetchBalances}
-            variant="outlined"
-            size="small"
-            startIcon={<RefreshIcon />}
+      </Box>
+    )
+  }
+
+  if (isWrongNetwork) {
+    return (
+      <Box sx={{
+        textAlign: 'center',
+        py: 4,
+        background: 'rgba(244, 91, 91, 0.05)',
+        borderRadius: '8px',
+        border: '1px solid rgba(244, 91, 91, 0.1)'
+      }}>
+        <BalanceIcon sx={{ fontSize: 40, color: 'error.main', mb: 1, opacity: 0.7 }} />
+        <Typography color="error" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+          Please switch to Sepolia network
+        </Typography>
+      </Box>
+    )
+  }
+
+  const tokenCardSx = {
+    bgcolor: 'background.paper',
+    border: 1,
+    borderColor: 'divider',
+    boxShadow: 'none',
+    borderRadius: '8px',
+    transition: 'border-color 0.15s ease',
+    flex: '0 0 auto',
+    width: { xs: 170, sm: 200 },
+  }
+
+  if (isLoadingBalances) {
+    return (
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <BalanceIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              Balances
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {[0, 1].map(i => (
+            <Card key={i} sx={{ ...tokenCardSx }}>
+              <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                  <Skeleton variant="rounded" width={48} height={24} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+                </Box>
+                <Skeleton variant="text" width="60%" height={40} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg, mb: 0.25 }} />
+                <Skeleton variant="text" width="40%" height={16} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* Section header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <BalanceIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+            Balances
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {(canScrollLeft || canScrollRight) && (
+            <>
+              <IconButton
+                size="small"
+                onClick={() => scroll('left')}
+                disabled={!canScrollLeft}
+                sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+              >
+                <ChevronLeftIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => scroll('right')}
+                disabled={!canScrollRight}
+                sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+              >
+                <ChevronRightIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+            </>
+          )}
+          <Tooltip title="Refresh balances">
+            <Button
+              data-testid="refresh-balances"
+              onClick={fetchBalances}
+              disabled={isLoadingBalances}
+              size="small"
+              sx={{
+                minWidth: 'auto',
+                p: 0.5,
+                color: 'text.secondary',
+                '&:hover': { color: 'primary.main' }
+              }}
+            >
+              <RefreshIcon sx={{
+                fontSize: '1rem',
+                animation: isLoadingBalances ? 'spin 1s linear infinite' : 'none',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' }
+                }
+              }} />
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      <Box sx={{ position: 'relative' }}>
+        <Box
+          ref={scrollRef}
+          onScroll={checkScroll}
+          sx={{
+            display: 'flex',
+            gap: 2,
+            overflowX: 'auto',
+            scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            pb: 0.5,
+          }}
+        >
+          {/* DAI Card */}
+          <Card sx={{
+            ...tokenCardSx,
+            scrollSnapAlign: 'start',
+            '&:hover': { borderColor: 'rgba(20, 184, 166, 0.3)' },
+          }}>
+            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Chip
+                  label="DAI"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    borderColor: 'rgba(20, 184, 166, 0.5)',
+                    color: 'primary.main',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    height: '24px'
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="h4"
+                data-testid="dai-balance"
+                sx={{
+                  fontWeight: 800,
+                  color: 'text.primary',
+                  fontFamily: 'monospace',
+                  fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                  mb: 0.25
+                }}
+              >
+                {formatBalance(balances.DAI)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                DAI Balance
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* USDC Card */}
+          <Card sx={{
+            ...tokenCardSx,
+            scrollSnapAlign: 'start',
+            '&:hover': { borderColor: 'rgba(164, 207, 94, 0.3)' },
+          }}>
+            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Chip
+                  label="USDC"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    borderColor: 'rgba(164, 207, 94, 0.5)',
+                    color: '#a4cf5e',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    height: '24px'
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="h4"
+                data-testid="usdc-balance"
+                sx={{
+                  fontWeight: 800,
+                  color: 'text.primary',
+                  fontFamily: 'monospace',
+                  fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                  mb: 0.25
+                }}
+              >
+                {formatBalance(balances.USDC)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                USDC Balance
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Custom Token Cards */}
+          {customTokens.map((ct) => (
+            <Card key={ct.address} sx={{
+              ...tokenCardSx,
+              scrollSnapAlign: 'start',
+              '&:hover': { borderColor: 'rgba(255, 179, 71, 0.3)' },
+            }}>
+              <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                  <Chip
+                    label={ct.symbol}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      borderColor: 'rgba(255, 179, 71, 0.5)',
+                      color: '#ffb347',
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                      height: '24px'
+                    }}
+                  />
+                  <Tooltip title="Remove token">
+                    <IconButton
+                      size="small"
+                      onClick={() => removeToken(ct.address)}
+                      sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: '#f45b5b' } }}
+                    >
+                      <DeleteIcon sx={{ fontSize: '1rem' }} />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 800,
+                    color: 'text.primary',
+                    fontFamily: 'monospace',
+                    fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                    mb: 0.25
+                  }}
+                >
+                  {formatBalance(balances[ct.symbol] ?? '0')}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                  {ct.name}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Add Token Card */}
+          <Card
+            onClick={() => setAddTokenOpen(true)}
             sx={{
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              color: 'text.primary',
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              fontWeight: 600,
-              borderRadius: '12px',
-              px: 3,
-              py: 1,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              '&:hover': {
-                borderColor: 'primary.main',
-                backgroundColor: 'rgba(102, 126, 234, 0.15)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
-              }
+              ...tokenCardSx,
+              scrollSnapAlign: 'start',
+              bgcolor: 'transparent',
+              border: '1px dashed',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 120,
+              '&:hover': { borderColor: 'primary.main' },
             }}
           >
-            Refresh
-          </Button>
-        )}
-      </Box>
-      
-      {!isConnected ? (
-        <Fade in timeout={600}>
-          <Box sx={{ 
-            textAlign: 'center', 
-            py: 8,
-            background: 'rgba(255, 255, 255, 0.02)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}>
-            <BalanceIcon sx={{ 
-              fontSize: 64, 
-              color: 'text.secondary', 
-              mb: 2,
-              opacity: 0.5
-            }} />
-            <Typography color="text.secondary" sx={{ 
-              fontSize: { xs: '1rem', sm: '1.1rem' },
-              fontWeight: 500
-            }}>
-              Connect your wallet to see balances
-            </Typography>
-          </Box>
-        </Fade>
-      ) : isWrongNetwork ? (
-        <Fade in timeout={600}>
-          <Box sx={{ 
-            textAlign: 'center', 
-            py: 8,
-            background: 'rgba(244, 67, 54, 0.05)',
-            borderRadius: '20px',
-            border: '1px solid rgba(244, 67, 54, 0.1)'
-          }}>
-            <TrendingUpIcon sx={{ 
-              fontSize: 64, 
-              color: 'error.main', 
-              mb: 2,
-              opacity: 0.7
-            }} />
-            <Typography color="error" sx={{ 
-              fontSize: { xs: '1rem', sm: '1.1rem' },
-              fontWeight: 500
-            }}>
-              Please switch to Sepolia network
-            </Typography>
-          </Box>
-        </Fade>
-      ) : (
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
-          gap: 4 
-        }}>
-          <Fade in timeout={800}>
-            <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.03)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              borderRadius: '20px'
-            }}>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Chip 
-                  label="DAI" 
-                  size="medium" 
-                  color="primary" 
-                  variant="outlined"
-                  sx={{ 
-                    borderColor: 'rgba(102, 126, 234, 0.5)',
-                    color: '#667eea',
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    mb: 3,
-                    height: '32px'
-                  }}
-                />
-                <Typography 
-                  variant="h3" 
-                  data-testid="dai-balance"
-                  sx={{ 
-                    fontWeight: 800,
-                    color: 'text.primary',
-                    fontFamily: 'monospace',
-                    fontSize: { xs: '2rem', sm: '2.5rem' },
-                    mb: 1
-                  }}
-                >
-                  {balances.DAI}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: 'text.secondary',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  DAI Balance
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-          
-          <Fade in timeout={1000}>
-            <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.03)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              borderRadius: '20px'
-            }}>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Chip 
-                  label="USDC" 
-                  size="medium" 
-                  color="secondary" 
-                  variant="outlined"
-                  sx={{ 
-                    borderColor: 'rgba(76, 175, 80, 0.5)',
-                    color: '#4caf50',
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    mb: 3,
-                    height: '32px'
-                  }}
-                />
-                <Typography 
-                  variant="h3" 
-                  data-testid="usdc-balance"
-                  sx={{ 
-                    fontWeight: 800,
-                    color: 'text.primary',
-                    fontFamily: 'monospace',
-                    fontSize: { xs: '2rem', sm: '2.5rem' },
-                    mb: 1
-                  }}
-                >
-                  {balances.USDC}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: 'text.secondary',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  USDC Balance
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <AddIcon sx={{ fontSize: 28, color: 'text.secondary', mb: 0.5 }} />
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                Add token
+              </Typography>
+            </CardContent>
+          </Card>
         </Box>
-      )}
-    </Box>
+      </Box>
+
+      <AddTokenDialog open={addTokenOpen} onClose={() => setAddTokenOpen(false)} />
+    </>
   )
 }

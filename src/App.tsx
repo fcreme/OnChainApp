@@ -1,14 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Transfers from './pages/Transfers'
+import { BrowserRouter as Router } from 'react-router-dom'
+import AnimatedRoutes from './pages/components/AnimatedRoutes'
+import Layout from './pages/components/Layout'
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/transfers" element={<Transfers />} />
-      </Routes>
+      <Layout>
+        <AnimatedRoutes />
+      </Layout>
     </Router>
   )
 }

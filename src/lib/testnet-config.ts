@@ -1,6 +1,5 @@
-// Configuración específica para testnet
+// Testnet-specific configuration
 export const TESTNET_SETTINGS = {
-  // Información de la red
   network: {
     name: 'Sepolia Testnet',
     chainId: 11155111,
@@ -8,27 +7,27 @@ export const TESTNET_SETTINGS = {
     explorer: 'https://sepolia.etherscan.io',
     rpcUrl: 'https://rpc.sepolia.org'
   },
-  
-  // Faucets para obtener ETH de prueba
+
+  // Faucets for getting test ETH
   faucets: [
     {
       name: 'Sepolia Faucet',
       url: 'https://sepoliafaucet.com/',
-      description: 'Faucet oficial de Sepolia'
+      description: 'Official Sepolia faucet'
     },
     {
       name: 'Alchemy Sepolia Faucet',
       url: 'https://sepoliafaucet.com/',
-      description: 'Faucet de Alchemy'
+      description: 'Alchemy faucet'
     },
     {
       name: 'Infura Sepolia Faucet',
       url: 'https://www.infura.io/faucet/sepolia',
-      description: 'Faucet de Infura'
+      description: 'Infura faucet'
     }
   ],
-  
-  // Tokens de prueba disponibles
+
+  // Available test tokens
   testTokens: {
     DAI: {
       address: '0x1D70D57ccD2798323232B2dD027B3aBcA5C00091',
@@ -43,28 +42,25 @@ export const TESTNET_SETTINGS = {
       name: 'USD Coin (Test)'
     }
   },
-  
-  // Configuración de la aplicación
+
+  // Application settings
   app: {
     isTestnet: true,
     showTestnetBanner: true,
-    allowMinting: true, // Permitir minting en testnet
-    maxMintAmount: '1000', // Cantidad máxima para minting
-    transactionTimeout: 30000 // 30 segundos
+    allowMinting: true,
+    maxMintAmount: '1000',
+    transactionTimeout: 30000
   }
 }
 
-// Función para obtener información del token
 export const getTokenInfo = (symbol: 'DAI' | 'USDC') => {
   return TESTNET_SETTINGS.testTokens[symbol]
 }
 
-// Función para verificar si estamos en testnet
 export const isTestnet = () => {
   return TESTNET_SETTINGS.app.isTestnet
 }
 
-// Función para obtener URLs de faucet
 export const getFaucetUrls = () => {
   return TESTNET_SETTINGS.faucets
 }
