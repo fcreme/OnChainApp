@@ -39,7 +39,7 @@ interface MarketCardProps {
 export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProps) {
   const isPositive = coin.priceChangePct24h >= 0
   const [flash, setFlash] = useState<FlashDir>(null)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     if (prevPrice === undefined || prevPrice === coin.price) return

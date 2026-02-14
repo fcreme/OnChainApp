@@ -84,8 +84,8 @@ function useGasEstimate(open: boolean, pendingAction: PendingAction | null) {
 
         const data = encodeFunctionData({
           abi: ERC20_ABI,
-          functionName,
-          args,
+          functionName: functionName as 'approve',
+          args: args as readonly [`0x${string}`, bigint],
         })
 
         const [gas, gasPrice] = await Promise.all([

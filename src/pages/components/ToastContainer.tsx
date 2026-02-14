@@ -6,7 +6,7 @@ import { TESTNET_SETTINGS } from '../../lib/testnet-config'
 
 function ToastItem({ toast }: { toast: Toast }) {
   const removeToast = useToastStore((s) => s.removeToast)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     if (toast.autoHideDuration > 0) {

@@ -40,7 +40,7 @@ export default function MemecoinCard({ pair, prevPrice, onSelect }: MemecoinCard
   const isPositive = pair.priceChange24h >= 0
   const fallbackInitials = pair.tokenSymbol.slice(0, 2).toUpperCase()
   const [flash, setFlash] = useState<FlashDir>(null)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // Detect price change and trigger flash
   useEffect(() => {

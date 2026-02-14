@@ -37,7 +37,6 @@ function CustomTooltip({
   payload?: TooltipPayloadEntry[]
   label?: number
 }) {
-  const theme = useTheme()
   if (!active || !payload?.length) return null
 
   return (

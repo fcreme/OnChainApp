@@ -8,8 +8,6 @@ export default function PageTransition({ children }: { children: ReactNode }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{
-        enter: { duration: 0.3, ease: 'easeOut' },
-        exit: { duration: 0.2, ease: 'easeIn' },
         duration: 0.3,
         ease: 'easeOut',
       }}

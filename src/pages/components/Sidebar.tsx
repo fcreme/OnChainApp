@@ -23,7 +23,6 @@ import {
   Help as HelpIcon,
   ContentCopy as CopyIcon,
   Check as CheckIcon,
-  AccountBalanceWallet as WalletIcon,
   Warning as WarningIcon,
   AccountBalance as FaucetIcon,
   Menu as MenuIcon,

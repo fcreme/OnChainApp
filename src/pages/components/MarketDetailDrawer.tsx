@@ -187,7 +187,7 @@ function PctChip({ label, value }: { label: string; value: number }) {
 
 export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
   const { mode } = useThemeStore()
-  const { copy, copied } = useCopyToClipboard()
+  const { copy, copiedText: copied } = useCopyToClipboard()
   const { links, isLoading: linksLoading } = useCoinLinks(coin?.id ?? null, open)
 
   if (!coin) return null

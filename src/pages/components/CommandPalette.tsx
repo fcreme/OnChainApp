@@ -23,7 +23,6 @@ import {
   CheckCircle as ApproveIcon,
   Add as MintIcon,
   Search as SearchIcon,
-  AccountBalanceWallet as WalletIcon,
   Keyboard as KeyboardIcon,
 } from '@mui/icons-material'
 import { useThemeStore } from '../../stores/useThemeStore'

@@ -6,7 +6,6 @@ import {
   IconButton,
   Chip,
   Divider,
-  Button,
   Skeleton,
   Tooltip,
   LinearProgress,
@@ -199,7 +198,7 @@ function getRiskLevelColor(level: string): string {
 export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
   const { mode } = useThemeStore()
   const [activeTab, setActiveTab] = useState<Timeframe>('h24')
-  const { copy, copied } = useCopyToClipboard()
+  const { copy, copiedText: copied } = useCopyToClipboard()
   const rugcheck = useRugcheck(open && pair ? pair.tokenAddress : null)
 
   if (!pair) return null

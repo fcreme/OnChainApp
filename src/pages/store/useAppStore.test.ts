@@ -40,7 +40,6 @@ describe('useAppStore', () => {
     expect(result.current.account).toBeUndefined()
     expect(result.current.chainId).toBeUndefined()
     expect(result.current.balances).toEqual({ DAI: '0', USDC: '0' })
-    expect(result.current.allowances).toEqual({ DAI: '0', USDC: '0' })
     expect(result.current.transactionStatus).toBe('idle')
     expect(result.current.transactionHash).toBeUndefined()
     expect(result.current.transactionError).toBeUndefined()

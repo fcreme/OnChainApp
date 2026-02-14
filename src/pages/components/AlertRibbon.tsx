@@ -4,8 +4,9 @@ import {
   Button,
   Stack,
   Typography,
-  useTheme
+  useTheme,
 } from '@mui/material'
+import type { Theme } from '@mui/material'
 import { useAppStore } from '../store/useAppStore'
 import { TESTNET_CONFIG } from '../../lib/web3'
 import { Link as RouterLink } from 'react-router-dom'
@@ -15,7 +16,7 @@ type AlertSeverity = 'error' | 'warning' | 'info'
 const lowEthThreshold = 0.05
 const largeTransferThreshold = 50
 
-const getSeverityColor = (severity: AlertSeverity, theme: ReturnType<typeof useTheme>) => {
+const getSeverityColor = (severity: AlertSeverity, theme: Theme) => {
   if (severity === 'error') return theme.palette.error.main
   if (severity === 'warning') return theme.palette.warning.main
   return theme.palette.primary.main
