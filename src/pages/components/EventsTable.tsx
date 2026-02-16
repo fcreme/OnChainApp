@@ -14,10 +14,9 @@ import {
   Tooltip,
   IconButton,
   Skeleton,
-  Card,
-  CardContent,
   Button,
 } from '@mui/material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   SwapHoriz as TransferIcon,
@@ -211,9 +210,12 @@ function EventsDialog({
                               key={h}
                               sx={{
                                 fontWeight: 600,
-                                fontSize: '0.875rem',
+                                fontSize: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
                                 padding: '10px 12px',
                                 bgcolor: 'background.paper',
+                                color: 'text.secondary',
                                 ...(h === 'From' || h === 'To'
                                   ? { display: { xs: 'none', md: 'table-cell' } }
                                   : {}),
@@ -250,7 +252,7 @@ function EventsDialog({
                                 sx={{ fontSize: '0.75rem' }}
                               />
                             </TableCell>
-                            <TableCell sx={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 500 }}>
+                            <TableCell sx={{ padding: '10px 12px', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'monospace' }}>
                               {e.amount}
                             </TableCell>
                             <TableCell
@@ -314,25 +316,11 @@ export default function EventsTable() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null)
 
-  const cardSx = {
-    bgcolor: 'background.paper',
-    border: 1,
-    borderColor: 'divider',
-    boxShadow: 'none',
-    borderRadius: '8px',
-    height: '100%',
-  }
-
   if (isLoadingEvents && events.length === 0) {
     return (
-      <Card sx={cardSx}>
-        <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <ReceiptIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Recent Events
-            </Typography>
-          </Box>
+      <HudCard sx={{ height: '100%' }}>
+        <Box sx={{ p: 2.5 }}>
+          <SectionHeader>Recent Events</SectionHeader>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {[0, 1, 2].map((i) => (
               <Skeleton
@@ -343,29 +331,23 @@ export default function EventsTable() {
               />
             ))}
           </Box>
-        </CardContent>
-      </Card>
+        </Box>
+      </HudCard>
     )
   }
 
   if (events.length === 0) {
     return (
-      <Card sx={cardSx}>
-        <CardContent
+      <HudCard sx={{ height: '100%' }}>
+        <Box
           sx={{
             p: 2.5,
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            '&:last-child': { pb: 2.5 },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <ReceiptIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Recent Events
-            </Typography>
-          </Box>
+          <SectionHeader>Recent Events</SectionHeader>
           <Box
             sx={{
               flex: 1,
@@ -383,8 +365,8 @@ export default function EventsTable() {
               Perform a transfer, approval, or mint to see events here
             </Typography>
           </Box>
-        </CardContent>
-      </Card>
+        </Box>
+      </HudCard>
     )
   }
 
@@ -395,17 +377,12 @@ export default function EventsTable() {
 
   return (
     <>
-      <Card sx={cardSx}>
-        <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+      <HudCard sx={{ height: '100%' }}>
+        <Box sx={{ p: 2.5 }}>
           {/* Header */}
+          <SectionHeader>Recent Events</SectionHeader>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <ReceiptIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                Recent Events
-              </Typography>
-              <Chip label={`${events.length}`} size="small" sx={{ fontSize: '0.75rem', height: 22 }} />
-            </Box>
+            <Chip label={`${events.length}`} size="small" sx={{ fontSize: '0.75rem', height: 22 }} />
             <Button
               size="small"
               variant="contained"
@@ -485,7 +462,7 @@ export default function EventsTable() {
                 />
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: 500, fontSize: '0.8rem', flex: 1, minWidth: 0 }}
+                  sx={{ fontWeight: 500, fontSize: '0.8rem', flex: 1, minWidth: 0, fontFamily: 'monospace' }}
                   noWrap
                 >
                   {e.amount} {e.token}
@@ -506,8 +483,8 @@ export default function EventsTable() {
               </Box>
             ))}
           </Box>
-        </CardContent>
-      </Card>
+        </Box>
+      </HudCard>
 
       <EventsDialog
         open={dialogOpen}

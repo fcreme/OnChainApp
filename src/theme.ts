@@ -199,8 +199,9 @@ export function getTheme(mode: 'light' | 'dark') {
       MuiChip: {
         styleOverrides: {
           root: {
-            borderRadius: 4,
+            borderRadius: 6,
             fontWeight: 500,
+            height: 28,
             backgroundColor: palette.custom.hoverBg,
             border: `1px solid ${palette.divider}`,
             color: palette.text.primary,

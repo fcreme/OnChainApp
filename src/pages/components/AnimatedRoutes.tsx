@@ -4,6 +4,7 @@ import Dashboard from '../Dashboard'
 import Transfers from '../Transfers'
 import Memecoins from '../Memecoins'
 import Markets from '../Markets'
+import Analysis from '../Analysis'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -15,6 +16,7 @@ export default function AnimatedRoutes() {
         <Route path="/transfers" element={<Transfers />} />
         <Route path="/memecoins" element={<Memecoins />} />
         <Route path="/markets" element={<Markets />} />
+        <Route path="/analysis" element={<Analysis />} />
       </Routes>
     </AnimatePresence>
   )

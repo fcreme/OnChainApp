@@ -1,8 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import {
   Box,
-  Card,
-  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -10,6 +8,7 @@ import {
   Stack,
   Typography
 } from '@mui/material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import {
   SyncAlt as SyncIcon,
   TrendingDown as TrendingDownIcon,
@@ -71,20 +70,11 @@ export default function TokenPerformanceWidget() {
     : 'Fetching latest prices'
 
   return (
-    <Card
-      sx={{
-        mb: 3,
-        border: 1,
-        borderColor: 'divider',
-        background: 'background.paper',
-      }}
-    >
-      <CardContent>
+    <HudCard sx={{ mb: 3 }}>
+      <Box sx={{ p: 2 }}>
+        <SectionHeader>Token Performance</SectionHeader>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Token Performance
-            </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Live Sepolia USD pricing and balance value
             </Typography>
@@ -137,10 +127,10 @@ export default function TokenPerformanceWidget() {
                       </Typography>
                     </Stack>
                   </Stack>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
                     ${formatUsd(t.price)}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
                     Holdings: {balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}{' '}
                     {t.symbol} (~${formatUsd(usdValue)})
                   </Typography>
@@ -156,12 +146,12 @@ export default function TokenPerformanceWidget() {
             <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
               Portfolio Value
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
               ${formatUsd(totalUsd)}
             </Typography>
           </Box>
         )}
-      </CardContent>
-    </Card>
+      </Box>
+    </HudCard>
   )
 }

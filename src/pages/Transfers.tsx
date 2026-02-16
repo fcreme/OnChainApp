@@ -4,14 +4,11 @@ import { useCustomTokensStore } from '../stores/useCustomTokensStore'
 import {
   Box,
   Container,
-  Card,
-  CardContent,
   Typography,
   Button,
   Chip,
   Tooltip,
   IconButton,
-  TextField,
   Skeleton
 } from '@mui/material'
 import {
@@ -20,7 +17,6 @@ import {
   ContentCopy as CopyIcon,
   Check as CheckIcon,
   FileDownload as ExportIcon,
-  Search as SearchIcon
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
@@ -28,6 +24,7 @@ import { useResolveContact } from '../hooks/useResolveContact'
 import { exportEventsToCSV } from '../lib/csvExport'
 import PageTransition from './components/PageTransition'
 import TransactionDetailDrawer from './components/TransactionDetailDrawer'
+import { PageHeader, FilterBar, FilterBarSeparator, FilterBarSearch, HudChip, StatCard, EmptyState, SectionHeader } from './components/HudPrimitives'
 
 function CopyableText({ text, display }: { text: string; display?: string }) {
   const { copy, copiedText } = useCopyToClipboard()
@@ -39,7 +36,7 @@ function CopyableText({ text, display }: { text: string; display?: string }) {
       <Tooltip title={isCopied ? 'Copied!' : 'Copy'}>
         <IconButton
           size="small"
-          onClick={() => copy(text)}
+          onClick={(e) => { e.stopPropagation(); copy(text) }}
           sx={{ p: 0.25, color: isCopied ? '#a4cf5e' : 'text.secondary', '&:hover': { color: 'primary.main' } }}
         >
           {isCopied ? <CheckIcon sx={{ fontSize: '0.75rem' }} /> : <CopyIcon sx={{ fontSize: '0.75rem' }} />}
@@ -57,6 +54,15 @@ function CopyableAddress({ address }: { address: string }) {
 }
 
 type TypeFilter = 'all' | 'transfer' | 'approval' | 'mint'
+
+function getEventAccentColor(type: string): string {
+  switch (type.toLowerCase()) {
+    case 'transfer': return '#a4cf5e'
+    case 'approval': return '#ffb347'
+    case 'mint': return '#14B8A6'
+    default: return '#14B8A6'
+  }
+}
 
 export default function Transfers() {
   const { events, isLoadingEvents } = useAppStore()
@@ -86,346 +92,225 @@ export default function Transfers() {
   const approvalCount = filteredEvents.filter(e => e.type.toLowerCase() === 'approval').length
   const mintCount = filteredEvents.filter(e => e.type.toLowerCase() === 'mint').length
 
-  const chipSx = (active: boolean) => ({
-    cursor: 'pointer',
-    fontWeight: active ? 700 : 400,
-    borderColor: active ? 'primary.main' : (theme: any) => theme.palette.custom.subtleBorder,
-    color: active ? 'primary.main' : 'text.secondary',
-    background: active ? 'rgba(20, 184, 166, 0.1)' : 'transparent',
-    '&:hover': {
-      borderColor: 'primary.main',
-      background: 'rgba(20, 184, 166, 0.05)'
-    }
-  })
-
-  const statCardSx = (active: boolean) => ({
-    bgcolor: 'background.paper',
-    border: active ? '1px solid rgba(20, 184, 166, 0.4)' : 1,
-    borderColor: active ? 'rgba(20, 184, 166, 0.4)' : 'divider',
-    boxShadow: 'none',
-    cursor: 'pointer',
-    transition: 'border-color 0.15s ease',
-    '&:hover': {
-      borderColor: 'rgba(20, 184, 166, 0.3)'
-    }
-  })
+  const exportButton = (
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={<ExportIcon sx={{ fontSize: '1rem !important' }} />}
+      disabled={events.length === 0}
+      onClick={() => exportEventsToCSV(filteredEvents)}
+      sx={{ fontSize: '0.75rem', height: 32 }}
+    >
+      Export CSV
+    </Button>
+  )
 
   return (
     <PageTransition>
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header - Full Width */}
-      <Box sx={{ mb: 6, maxWidth: '100%' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<ExportIcon sx={{ fontSize: '1rem !important' }} />}
-            disabled={events.length === 0}
-            onClick={() => exportEventsToCSV(filteredEvents)}
-          >
-            Export CSV
-          </Button>
-        </Box>
-
-        <Typography
-          variant="h1"
-          sx={{
-            mb: 2,
-            color: 'text.primary',
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
-            textAlign: 'left'
-          }}
-        >
-          Transaction History
-        </Typography>
-
-        <Typography
-          variant="h6"
-          sx={{
-            color: 'text.secondary',
-            maxWidth: 600,
-            fontWeight: 400,
-            textAlign: 'left'
-          }}
-        >
-          Here you can see all transactions performed on the Sepolia network
-        </Typography>
-      </Box>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+      {/* Header */}
+      <PageHeader
+        icon={<HistoryIcon sx={{ fontSize: '1rem', color: '#14B8A6' }} />}
+        title="Transfers"
+        subtitle="Transaction history on Sepolia network"
+        action={exportButton}
+      />
 
       {/* Filter Bar */}
-      <Box sx={{
-        mb: 4,
-        p: 3,
-        borderRadius: '8px',
-        bgcolor: 'background.paper',
-        border: 1,
-        borderColor: 'divider',
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        gap: 3,
-        alignItems: { xs: 'stretch', md: 'center' }
-      }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1, fontWeight: 600 }}>Type:</Typography>
-          {(['all', 'transfer', 'approval', 'mint'] as TypeFilter[]).map(t => (
-            <Chip
-              key={t}
-              label={t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
-              size="small"
-              variant="outlined"
-              onClick={() => setTypeFilter(t)}
-              sx={chipSx(typeFilter === t)}
-            />
-          ))}
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 1, fontWeight: 600 }}>Token:</Typography>
-          {allTokenFilters.map(t => (
-            <Chip
-              key={t}
-              label={t === 'all' ? 'All' : t}
-              size="small"
-              variant="outlined"
-              onClick={() => setTokenFilter(t)}
-              sx={chipSx(tokenFilter === t)}
-            />
-          ))}
-        </Box>
-
-        <TextField
-          size="small"
-          placeholder="Search by tx hash or address..."
+      <FilterBar>
+        {(['all', 'transfer', 'approval', 'mint'] as TypeFilter[]).map(t => (
+          <HudChip
+            key={t}
+            label={t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+            active={typeFilter === t}
+            onClick={() => setTypeFilter(t)}
+          />
+        ))}
+        <FilterBarSeparator />
+        {allTokenFilters.map(t => (
+          <HudChip
+            key={t}
+            label={t === 'all' ? 'All' : t}
+            active={tokenFilter === t}
+            onClick={() => setTokenFilter(t)}
+          />
+        ))}
+        <FilterBarSeparator />
+        <FilterBarSearch
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
-            }
-          }}
-          sx={{
-            flex: 1,
-            minWidth: 200,
-            '& .MuiOutlinedInput-root': {
-              fontSize: '0.875rem'
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: (theme: any) => theme.palette.custom.subtleBorder,
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: (theme: any) => theme.palette.custom.subtleBorder,
-            }
-          }}
+          onChange={setSearchQuery}
+          placeholder="Search by tx hash or address..."
         />
-      </Box>
+      </FilterBar>
 
-      {/* Statistics Cards - Full Width */}
+      {/* Statistics Cards */}
       {isLoadingEvents && events.length === 0 ? (
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, mb: 6, maxWidth: '100%' }}>
+        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, mb: 2.5 }}>
           {[0, 1, 2, 3].map(i => (
-            <Card key={i} sx={{ bgcolor: 'background.paper', border: 1, borderColor: 'divider', boxShadow: 'none', borderRadius: '8px' }}>
-              <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                <Skeleton variant="text" width="40%" height={50} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg, mx: 'auto' }} />
-                <Skeleton variant="text" width="60%" height={20} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg, mx: 'auto' }} />
-              </CardContent>
-            </Card>
+            <Box
+              key={i}
+              sx={{
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: '10px',
+                p: 2,
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
+              <Skeleton variant="text" width="40%" height={40} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+              <Skeleton variant="text" width="60%" height={16} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+            </Box>
           ))}
         </Box>
       ) : (
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, mb: 6, maxWidth: '100%' }}>
-          <Card
-            onClick={() => setTypeFilter('all')}
-            sx={statCardSx(typeFilter === 'all')}
-          >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h3" sx={{ color: 'primary.main', fontWeight: 700 }}>
-                {totalTransactions}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Total Transactions
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card
-            onClick={() => setTypeFilter(typeFilter === 'transfer' ? 'all' : 'transfer')}
-            sx={statCardSx(typeFilter === 'transfer')}
-          >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h3" sx={{ color: 'success.main', fontWeight: 700 }}>
-                {transferCount}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Transfers
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card
-            onClick={() => setTypeFilter(typeFilter === 'approval' ? 'all' : 'approval')}
-            sx={statCardSx(typeFilter === 'approval')}
-          >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h3" sx={{ color: 'warning.main', fontWeight: 700 }}>
-                {approvalCount}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Approvals
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card
-            onClick={() => setTypeFilter(typeFilter === 'mint' ? 'all' : 'mint')}
-            sx={statCardSx(typeFilter === 'mint')}
-          >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h3" sx={{ color: 'info.main', fontWeight: 700 }}>
-                {mintCount}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Mints
-              </Typography>
-            </CardContent>
-          </Card>
+        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, mb: 2.5 }}>
+          <StatCard label="Total" count={totalTransactions} color="#14B8A6" icon="Σ" index={0} onClick={() => setTypeFilter('all')} />
+          <StatCard label="Transfers" count={transferCount} color="#a4cf5e" icon="↗" index={1} onClick={() => setTypeFilter(typeFilter === 'transfer' ? 'all' : 'transfer')} />
+          <StatCard label="Approvals" count={approvalCount} color="#ffb347" icon="✓" index={2} onClick={() => setTypeFilter(typeFilter === 'approval' ? 'all' : 'approval')} />
+          <StatCard label="Mints" count={mintCount} color="#14B8A6" icon="✦" index={3} onClick={() => setTypeFilter(typeFilter === 'mint' ? 'all' : 'mint')} />
         </Box>
       )}
 
-      {/* Transactions List - Left Aligned */}
-      <Card
-        sx={{
-          bgcolor: 'background.paper',
-          border: 1,
-          borderColor: 'divider',
-          boxShadow: 'none',
-          maxWidth: '100%'
-        }}
-      >
-        <CardContent sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-            <HistoryIcon sx={{ color: 'primary.main', fontSize: 32 }} />
-            <Typography
-              variant="h4"
+      {/* Transactions List */}
+      <SectionHeader>All Transactions</SectionHeader>
+
+      {isLoadingEvents && events.length === 0 ? (
+        <Box sx={{ display: 'grid', gap: 1.5 }}>
+          {[0, 1, 2].map(i => (
+            <Box
+              key={i}
               sx={{
-                fontWeight: 600,
-                color: 'text.primary'
+                bgcolor: (theme: any) => theme.palette.custom.bgTertiary,
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                p: 3,
               }}
             >
-              All Transactions
-            </Typography>
-          </Box>
-
-          {isLoadingEvents && events.length === 0 ? (
-            <Box sx={{ display: 'grid', gap: 3 }}>
-              {[0, 1, 2].map(i => (
-                <Card key={i} sx={{ bgcolor: (theme: any) => theme.palette.custom.bgTertiary, border: 1, borderColor: 'divider', borderRadius: '8px' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Skeleton variant="rounded" width={70} height={24} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
-                        <Skeleton variant="rounded" width={50} height={24} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
-                      </Box>
-                      <Skeleton variant="text" width={60} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
-                    </Box>
-                    <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-                      <Skeleton variant="text" width="70%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
-                      <Skeleton variant="text" width="70%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
-                    </Box>
-                    <Skeleton variant="text" width="30%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg, mt: 2 }} />
-                  </CardContent>
-                </Card>
-              ))}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Skeleton variant="rounded" width={70} height={24} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+                  <Skeleton variant="rounded" width={50} height={24} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+                </Box>
+                <Skeleton variant="text" width={60} sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+              </Box>
+              <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                <Skeleton variant="text" width="70%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+                <Skeleton variant="text" width="70%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg }} />
+              </Box>
+              <Skeleton variant="text" width="30%" sx={{ bgcolor: (theme: any) => theme.palette.custom.hoverBg, mt: 2 }} />
             </Box>
-          ) : filteredEvents.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <TrendingUpIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h5" sx={{ color: 'text.primary', mb: 2 }}>
-                {events.length === 0 ? 'No transactions yet' : 'No matching transactions'}
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
-                {events.length === 0
-                  ? 'Perform a transfer or approval to see the history'
-                  : 'Try adjusting your filters or search query'}
-              </Typography>
-              {events.length === 0 && (
-                <Button
-                  component={Link}
-                  to="/"
-                  variant="contained"
-                  size="large"
-                >
-                  Go to Dashboard
-                </Button>
-              )}
-            </Box>
-          ) : (
-            <Box sx={{ display: 'grid', gap: 3 }}>
-              {filteredEvents.slice().reverse().map((event, index) => (
-                <Card
-                  key={index}
-                  onClick={() => setSelectedEvent(event)}
-                  sx={{
-                    bgcolor: (theme: any) => theme.palette.custom.bgTertiary,
-                    border: 1,
-                    borderColor: 'divider',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      borderColor: (theme: any) => theme.palette.custom.subtleBorder,
-                    }
-                  }}
-                >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Chip
-                          label={event.type}
-                          size="small"
-                          color={
-                            event.type.toLowerCase() === 'transfer' ? 'success' :
-                            event.type.toLowerCase() === 'approval' ? 'warning' : 'info'
-                          }
-                          variant="outlined"
-                        />
-                        <Chip
-                          label={event.token}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </Box>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {event.amount}
-                      </Typography>
+          ))}
+        </Box>
+      ) : filteredEvents.length === 0 ? (
+        <EmptyState
+          icon={<TrendingUpIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.4 }} />}
+          message={events.length === 0 ? 'No transactions yet' : 'No matching transactions'}
+          submessage={events.length === 0
+            ? 'Perform a transfer or approval to see the history'
+            : 'Try adjusting your filters or search query'}
+        >
+          {events.length === 0 && (
+            <Button
+              component={Link}
+              to="/"
+              variant="contained"
+              size="large"
+            >
+              Go to Dashboard
+            </Button>
+          )}
+        </EmptyState>
+      ) : (
+        <Box sx={{ display: 'grid', gap: 1.5 }}>
+          {filteredEvents.slice().reverse().map((event, index) => {
+            const accentColor = getEventAccentColor(event.type)
+            return (
+              <Box
+                key={index}
+                onClick={() => setSelectedEvent(event)}
+                sx={{
+                  bgcolor: (theme) => theme.palette.custom.bgTertiary,
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'rgba(20,184,166,0.3)',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: `linear-gradient(90deg, ${accentColor}00, ${accentColor}60, ${accentColor}00)`,
+                  },
+                }}
+              >
+                <Box sx={{ p: 2.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Chip
+                        label={event.type}
+                        size="small"
+                        color={
+                          event.type.toLowerCase() === 'transfer' ? 'success' :
+                          event.type.toLowerCase() === 'approval' ? 'warning' : 'info'
+                        }
+                        variant="outlined"
+                        sx={{ fontSize: '0.72rem', height: 24, borderRadius: '6px' }}
+                      />
+                      <Chip
+                        label={event.token}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: '0.72rem', height: 24, borderRadius: '6px' }}
+                      />
                     </Box>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' }}>
+                      {event.amount}
+                    </Typography>
+                  </Box>
 
-                    <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        <strong>From:</strong>{' '}
-                        {event.from ? (
-                          <CopyableAddress address={event.from} />
-                        ) : '-'}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        <strong>To:</strong>{' '}
-                        {event.to ? (
-                          <CopyableAddress address={event.to} />
-                        ) : '-'}
-                      </Typography>
-                    </Box>
+                  <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                      <strong>From:</strong>{' '}
+                      {event.from ? (
+                        <CopyableAddress address={event.from} />
+                      ) : '-'}
+                    </Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                      <strong>To:</strong>{' '}
+                      {event.to ? (
+                        <CopyableAddress address={event.to} />
+                      ) : '-'}
+                    </Typography>
+                  </Box>
 
-                    <Box sx={{ mt: 2 }}>
+                  <Box sx={{ mt: 1.5 }}>
+                    <Typography component="span" sx={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'text.secondary' }}>
                       <CopyableText
                         text={event.tx}
                         display={`Tx: ${event.tx.slice(0, 10)}...`}
                       />
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          )}
-        </CardContent>
-      </Card>
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
+      )}
+
       <TransactionDetailDrawer
         open={selectedEvent !== null}
         onClose={() => setSelectedEvent(null)}

@@ -39,17 +39,23 @@ export default function SaveContactPrompt({ address, onSaved, onDismiss }: SaveC
     <Box
       sx={{
         mt: 2,
-        p: 2,
-        borderRadius: '8px',
+        borderRadius: '12px',
         bgcolor: (theme: any) => theme.palette.custom.subtleBg,
         border: 1,
         borderColor: 'divider',
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'stretch', sm: 'center' },
-        gap: 1.5,
+        overflow: 'hidden',
       }}
     >
+      <Box sx={{ height: '2px', background: 'linear-gradient(90deg, #14B8A600, #14B8A680, #14B8A600)' }} />
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: 1.5,
+        }}
+      >
       <PersonAddIcon sx={{ color: 'primary.main', fontSize: 20, flexShrink: 0 }} />
       <Typography variant="body2" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0 }}>
         Save {short} to contacts?
@@ -98,6 +104,7 @@ export default function SaveContactPrompt({ address, onSaved, onDismiss }: SaveC
         >
           Dismiss
         </Button>
+      </Box>
       </Box>
     </Box>
   )

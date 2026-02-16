@@ -1,6 +1,6 @@
-import { Box, Card, CardContent, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import { useTheme } from '@mui/material/styles'
-import { ShowChart as ChartIcon } from '@mui/icons-material'
 import {
   AreaChart,
   Area,
@@ -78,26 +78,9 @@ export default function PortfolioChart() {
   }
 
   return (
-    <Card
-      sx={{
-        bgcolor: 'background.paper',
-        border: 1,
-        borderColor: 'divider',
-        boxShadow: 'none',
-        borderRadius: '8px',
-        mb: 3,
-      }}
-    >
-      <CardContent sx={{ p: 2.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-          <ChartIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: 600, color: 'text.primary' }}
-          >
-            Portfolio History
-          </Typography>
-        </Box>
+    <HudCard sx={{ mb: 3 }}>
+      <Box sx={{ p: 2.5 }}>
+        <SectionHeader>Portfolio History</SectionHeader>
         <ResponsiveContainer width="100%" height={250}>
           <AreaChart data={snapshots}>
             <CartesianGrid
@@ -147,7 +130,7 @@ export default function PortfolioChart() {
             />
           </AreaChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </Box>
+    </HudCard>
   )
 }

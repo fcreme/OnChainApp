@@ -142,14 +142,15 @@ export default function ConfirmDialog({ open, onClose, onConfirm, pendingAction 
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '8px',
+          borderRadius: '12px',
           bgcolor: 'background.paper',
           border: 1,
           borderColor: 'divider',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)'
+          overflow: 'hidden',
         }
       }}
     >
+      <Box sx={{ height: '2px', background: 'linear-gradient(90deg, #14B8A600, #14B8A680, #14B8A600)' }} />
       <DialogTitle sx={{
         pb: 1,
         display: 'flex',

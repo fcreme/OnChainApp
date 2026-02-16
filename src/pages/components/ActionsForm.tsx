@@ -15,8 +15,6 @@ import {
   Tooltip,
   Typography,
   Chip,
-  Card,
-  CardContent,
 } from '@mui/material'
 import {
   CheckCircle as ApproveIcon,
@@ -26,8 +24,8 @@ import {
   Warning as WarningIcon,
   Contacts as ContactsIcon,
   History as HistoryIcon,
-  Tune as OperationsIcon,
 } from '@mui/icons-material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import ConfirmDialog, { type PendingAction } from './ConfirmDialog'
 import AddressBookDialog from './AddressBookDialog'
 import SaveContactPrompt from './SaveContactPrompt'
@@ -329,14 +327,9 @@ export default function ActionsForm(){
   }
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', border: 1, borderColor: 'divider', boxShadow: 'none', borderRadius: '8px' }}>
-      <CardContent sx={{ p: 2.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-        <OperationsIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-          Token Operations
-        </Typography>
-      </Box>
+    <HudCard>
+      <Box sx={{ p: 2.5 }}>
+      <SectionHeader>Operations</SectionHeader>
       <Box component="form">
       <style>
         {`
@@ -607,12 +600,15 @@ export default function ActionsForm(){
                     variant="outlined"
                     onClick={() => handleInputChange('address', addr)}
                     sx={{
-                      height: 22,
-                      fontSize: '0.7rem',
+                      height: 30,
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
                       fontFamily: contactName ? 'inherit' : 'monospace',
                       cursor: 'pointer',
-                      borderColor: (theme: any) => theme.palette.custom.subtleBorder,
-                      '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
+                      borderRadius: '6px',
+                      borderColor: 'divider',
+                      transition: 'all 0.15s ease',
+                      '&:hover': { borderColor: 'rgba(20, 184, 166, 0.4)', color: 'primary.main', bgcolor: 'rgba(20, 184, 166, 0.07)' },
                     }}
                   />
                 )
@@ -701,7 +697,7 @@ export default function ActionsForm(){
         />
       )}
     </Box>
-    </CardContent>
-    </Card>
+    </Box>
+    </HudCard>
   )
 }

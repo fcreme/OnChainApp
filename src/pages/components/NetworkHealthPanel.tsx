@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  Card,
-  CardContent,
   CircularProgress,
   Divider,
   Stack,
   Typography
 } from '@mui/material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import { formatUnits } from 'viem'
 import { getPublicClient } from 'wagmi/actions'
 import { sepolia } from 'wagmi/chains'
@@ -111,23 +110,15 @@ export default function NetworkHealthPanel() {
   }
 
   return (
-    <Card
-      sx={{
-        border: 1,
-        borderColor: 'divider',
-        background: 'background.paper'
-      }}
-    >
-      <CardContent>
+    <HudCard>
+      <Box sx={{ p: 2 }}>
+        <SectionHeader>Network Health</SectionHeader>
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
           sx={{ mb: 2 }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Network Health
-          </Typography>
           <Stack direction="row" alignItems="center" spacing={1}>
             {isLoading && <CircularProgress size={18} thickness={5} />}
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -150,13 +141,13 @@ export default function NetworkHealthPanel() {
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {row.label}
               </Typography>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                 {row.value}
               </Typography>
             </Box>
           ))}
         </Stack>
-      </CardContent>
-    </Card>
+      </Box>
+    </HudCard>
   )
 }

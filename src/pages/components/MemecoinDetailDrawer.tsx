@@ -14,13 +14,13 @@ import {
   OpenInNew as ExternalIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  ArrowBack as BackIcon,
   ContentCopy as CopyIcon,
 } from '@mui/icons-material'
 import type { MemecoinPair, TimeframeData } from '../../lib/dexscreener'
 import { formatMemePrice, formatCompactNumber, formatAge } from '../../lib/dexscreener'
 import { useThemeStore } from '../../stores/useThemeStore'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { DrawerHeader, SectionHeader } from './HudPrimitives'
 
 interface Props {
   open: boolean
@@ -43,6 +43,8 @@ function PriceChangeChip({ value }: { value: number }) {
       sx={{
         fontSize: '0.8rem',
         fontWeight: 700,
+        fontFamily: 'monospace',
+        fontVariantNumeric: 'tabular-nums',
         color: value === 0 ? 'text.secondary' : isPos ? '#a4cf5e' : '#f45b5b',
       }}
     >
@@ -51,13 +53,7 @@ function PriceChangeChip({ value }: { value: number }) {
   )
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1 }}>
-      {children}
-    </Typography>
-  )
-}
+// SectionLabel replaced by SectionHeader from HudPrimitives
 
 function StatCell({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
@@ -65,7 +61,7 @@ function StatCell({ label, value, color }: { label: string; value: string | numb
       <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mb: 0.25, textTransform: 'uppercase', letterSpacing: 0.3 }}>
         {label}
       </Typography>
-      <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: color ?? 'text.primary' }}>
+      <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: color ?? 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Typography>
     </Box>
@@ -79,7 +75,7 @@ function StatsRow({ items, bgcolor }: { items: { label: string; value: string | 
       gridTemplateColumns: `repeat(${items.length}, 1fr)`,
       gap: 0.5,
       p: 1.25,
-      borderRadius: '8px',
+      borderRadius: '10px',
       bgcolor: bgcolor ?? ((theme: any) => theme.palette.custom.subtleBg),
       border: 1,
       borderColor: 'divider',
@@ -225,18 +221,9 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Top bar */}
-        <Box sx={{
-          px: 3,
-          py: 1.5,
-          bgcolor: 'background.paper',
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={onClose} size="small" sx={{ mr: 0.5 }}>
-              <BackIcon />
-            </IconButton>
+        {/* Top bar — HUD DrawerHeader */}
+        <DrawerHeader color={isPositive ? '#a4cf5e' : '#f45b5b'} onClose={onClose}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
             {pair.imageUrl ? (
               <Box
                 component="img"
@@ -314,6 +301,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                   height: 22,
                   fontSize: '0.65rem',
                   fontWeight: 500,
+                  fontFamily: 'monospace',
                   bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                   color: 'text.secondary',
                   border: 0,
@@ -335,6 +323,8 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                   height: 22,
                   fontSize: '0.65rem',
                   fontWeight: 600,
+                  fontFamily: 'monospace',
+                  fontVariantNumeric: 'tabular-nums',
                   bgcolor: t.value === 0 ? (theme: any) => theme.palette.custom.subtleBg
                     : t.value > 0 ? 'rgba(164, 207, 94, 0.1)' : 'rgba(244, 91, 91, 0.1)',
                   color: t.value === 0 ? 'text.secondary' : t.value > 0 ? '#a4cf5e' : '#f45b5b',
@@ -343,21 +333,21 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
               />
             ))}
             <Box sx={{ flex: 1 }} />
-            <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'text.primary', whiteSpace: 'nowrap' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'text.primary', whiteSpace: 'nowrap', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
               {formatMemePrice(pair.priceUsd)}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, mr: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
               {isPositive ? (
                 <TrendingUpIcon sx={{ fontSize: '0.9rem', color: '#a4cf5e' }} />
               ) : (
                 <TrendingDownIcon sx={{ fontSize: '0.9rem', color: '#f45b5b' }} />
               )}
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: isPositive ? '#a4cf5e' : '#f45b5b' }}>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: isPositive ? '#a4cf5e' : '#f45b5b', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                 {isPositive ? '+' : ''}{pair.priceChange24h.toFixed(2)}%
               </Typography>
             </Box>
           </Box>
-        </Box>
+        </DrawerHeader>
 
         {/* Main content: chart left, stats right */}
         <Box sx={{
@@ -416,7 +406,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                   width: '100%',
                   height: 100,
                   objectFit: 'cover',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   border: 1,
                   borderColor: 'divider',
                 }}
@@ -477,7 +467,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
 
             {/* Key metrics row */}
             <Box>
-              <SectionLabel>Key Metrics</SectionLabel>
+              <SectionHeader>Key Metrics</SectionHeader>
               <StatsRow items={[
                 { label: 'Liquidity', value: formatCompactNumber(pair.liquidity) },
                 { label: 'FDV', value: formatCompactNumber(pair.fdv) },
@@ -487,7 +477,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
 
             {/* Price change across timeframes */}
             <Box>
-              <SectionLabel>Price Change</SectionLabel>
+              <SectionHeader>Price Change</SectionHeader>
               <Box sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
@@ -499,7 +489,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                     <Box key={key} sx={{
                       textAlign: 'center',
                       p: 1,
-                      borderRadius: '8px',
+                      borderRadius: '10px',
                       bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                       border: 1,
                       borderColor: 'divider',
@@ -586,7 +576,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
 
             {/* Pair Info */}
             <Box>
-              <SectionLabel>Pair Info</SectionLabel>
+              <SectionHeader>Pair Info</SectionHeader>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Token</Typography>
@@ -619,7 +609,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
             {/* Rugcheck */}
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <SectionLabel>Rugcheck</SectionLabel>
+                <SectionHeader>Rugcheck</SectionHeader>
                 <Tooltip title="View on Rugcheck">
                   <IconButton
                     size="small"
@@ -632,10 +622,10 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
               </Box>
               {rugcheck.loading && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Skeleton variant="rounded" height={52} sx={{ borderRadius: '8px' }} />
-                  <Skeleton variant="rounded" height={32} sx={{ borderRadius: '8px' }} />
-                  <Skeleton variant="rounded" height={32} sx={{ borderRadius: '8px' }} />
-                  <Skeleton variant="rounded" height={60} sx={{ borderRadius: '8px' }} />
+                  <Skeleton variant="rounded" height={52} sx={{ borderRadius: '10px' }} />
+                  <Skeleton variant="rounded" height={32} sx={{ borderRadius: '10px' }} />
+                  <Skeleton variant="rounded" height={32} sx={{ borderRadius: '10px' }} />
+                  <Skeleton variant="rounded" height={60} sx={{ borderRadius: '10px' }} />
                 </Box>
               )}
               {rugcheck.error && (
@@ -651,7 +641,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                     alignItems: 'center',
                     gap: 1.5,
                     p: 1.5,
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                     border: 1,
                     borderColor: 'divider',
@@ -668,7 +658,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                       borderColor: getRiskColor(rugcheck.report.score),
                       flexShrink: 0,
                     }}>
-                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: getRiskColor(rugcheck.report.score) }}>
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: getRiskColor(rugcheck.report.score), fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                         {rugcheck.report.score}
                       </Typography>
                     </Box>
@@ -714,7 +704,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                       gap: 1,
                       px: 1.25,
                       py: 0.75,
-                      borderRadius: '8px',
+                      borderRadius: '10px',
                       bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                       border: 1,
                       borderColor: 'divider',
@@ -785,7 +775,7 @@ export default function MemecoinDetailDrawer({ open, onClose, pair }: Props) {
                               />
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 50, justifyContent: 'flex-end' }}>
-                              <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary' }}>
+                              <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                                 {holder.pct.toFixed(1)}%
                               </Typography>
                               {holder.insider && (
@@ -826,7 +816,7 @@ function SecurityFlag({ label, safe, value }: { label: string; safe: boolean; va
       justifyContent: 'space-between',
       px: 1.25,
       py: 0.75,
-      borderRadius: '6px',
+      borderRadius: '10px',
       bgcolor: (theme: any) => theme.palette.custom.subtleBg,
       border: 1,
       borderColor: 'divider',

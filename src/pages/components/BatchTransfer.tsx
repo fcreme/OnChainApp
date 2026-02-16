@@ -10,8 +10,6 @@ import {
   FormControl,
   Chip,
   LinearProgress,
-  Card,
-  CardContent,
   Collapse,
 } from '@mui/material'
 import {
@@ -22,6 +20,7 @@ import {
   ExpandLess as ExpandLessIcon,
   SendAndArchive as BatchIcon,
 } from '@mui/icons-material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import { useAppStore } from '../store/useAppStore'
 import { useCustomTokensStore } from '../../stores/useCustomTokensStore'
 import { useContactsStore } from '../../stores/useContactsStore'
@@ -129,8 +128,9 @@ export default function BatchTransfer() {
   }
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', border: 1, borderColor: 'divider', boxShadow: 'none' }}>
-      <CardContent sx={{ p: 3 }}>
+    <HudCard>
+      <Box sx={{ p: 3 }}>
+        <SectionHeader>Batch Transfer</SectionHeader>
         <Box
           onClick={() => setExpanded(!expanded)}
           sx={{
@@ -288,7 +288,7 @@ export default function BatchTransfer() {
             </Box>
           </Box>
         </Collapse>
-      </CardContent>
-    </Card>
+      </Box>
+    </HudCard>
   )
 }

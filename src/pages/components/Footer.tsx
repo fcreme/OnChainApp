@@ -8,8 +8,9 @@ export default function Footer() {
       sx={{
         py: 3,
         mt: 6,
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        background: '#0a0a0a',
+        borderTop: 1,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
       }}
     >
       <Container maxWidth="xl">
@@ -21,7 +22,7 @@ export default function Footer() {
           gap: 2
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <BoltIcon sx={{ fontSize: '1.2rem', color: '#06b6d4' }} />
+            <BoltIcon sx={{ fontSize: '1.2rem', color: '#14B8A6' }} />
             <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Onchain
             </Typography>
@@ -47,8 +48,9 @@ export default function Footer() {
                 variant="outlined"
                 sx={{
                   fontSize: '0.65rem',
-                  height: 22,
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  height: 24,
+                  borderRadius: '6px',
+                  borderColor: 'divider',
                   color: 'text.secondary'
                 }}
               />

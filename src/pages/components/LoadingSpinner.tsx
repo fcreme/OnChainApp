@@ -7,7 +7,7 @@ interface LoadingSpinnerProps {
 
 export default function LoadingSpinner({ 
   size = 'medium', 
-  color = '#3498db', 
+  color = '#14B8A6',
   text,
   className = ''
 }: LoadingSpinnerProps) {
@@ -37,7 +37,8 @@ export default function LoadingSpinner({
           border: `2px solid #f3f3f3`,
           borderTop: `2px solid ${color}`,
           borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
+          animation: 'spin 1s linear infinite',
+          filter: 'drop-shadow(0 0 8px rgba(20,184,166,0.3))'
         }}
       />
       {text && (

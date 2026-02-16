@@ -27,8 +27,8 @@ function ToastItem({ toast }: { toast: Toast }) {
           </IconButton>
         }
         sx={{
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          borderRadius: '10px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           minWidth: 300,
           maxWidth: 400,
         }}

@@ -12,6 +12,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import {
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,
@@ -118,22 +119,28 @@ export default function BalancesCard(){
     border: 1,
     borderColor: 'divider',
     boxShadow: 'none',
-    borderRadius: '8px',
-    transition: 'border-color 0.15s ease',
+    borderRadius: '10px',
+    transition: 'all 0.2s ease',
     flex: '0 0 auto',
     width: { xs: 170, sm: 200 },
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '2px',
+      background: 'linear-gradient(90deg, rgba(20,184,166,0), rgba(20,184,166,0.6), rgba(20,184,166,0))',
+    },
   }
 
   if (isLoadingBalances) {
     return (
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <BalanceIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-              Balances
-            </Typography>
-          </Box>
+          <SectionHeader>Token Balances</SectionHeader>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
           {[0, 1].map(i => (
@@ -227,7 +234,7 @@ export default function BalancesCard(){
           <Card sx={{
             ...tokenCardSx,
             scrollSnapAlign: 'start',
-            '&:hover': { borderColor: 'rgba(20, 184, 166, 0.3)' },
+            '&:hover': { borderColor: 'rgba(20, 184, 166, 0.3)', boxShadow: '0 0 20px rgba(20, 184, 166, 0.08)' },
           }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
@@ -251,6 +258,7 @@ export default function BalancesCard(){
                   fontWeight: 800,
                   color: 'text.primary',
                   fontFamily: 'monospace',
+                  fontVariantNumeric: 'tabular-nums',
                   fontSize: { xs: '1.5rem', sm: '1.75rem' },
                   mb: 0.25
                 }}
@@ -267,7 +275,7 @@ export default function BalancesCard(){
           <Card sx={{
             ...tokenCardSx,
             scrollSnapAlign: 'start',
-            '&:hover': { borderColor: 'rgba(164, 207, 94, 0.3)' },
+            '&:hover': { borderColor: 'rgba(164, 207, 94, 0.3)', boxShadow: '0 0 20px rgba(164, 207, 94, 0.08)' },
           }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
@@ -291,6 +299,7 @@ export default function BalancesCard(){
                   fontWeight: 800,
                   color: 'text.primary',
                   fontFamily: 'monospace',
+                  fontVariantNumeric: 'tabular-nums',
                   fontSize: { xs: '1.5rem', sm: '1.75rem' },
                   mb: 0.25
                 }}
@@ -308,7 +317,7 @@ export default function BalancesCard(){
             <Card key={ct.address} sx={{
               ...tokenCardSx,
               scrollSnapAlign: 'start',
-              '&:hover': { borderColor: 'rgba(255, 179, 71, 0.3)' },
+              '&:hover': { borderColor: 'rgba(255, 179, 71, 0.3)', boxShadow: '0 0 20px rgba(255, 179, 71, 0.08)' },
             }}>
               <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
@@ -340,6 +349,7 @@ export default function BalancesCard(){
                     fontWeight: 800,
                     color: 'text.primary',
                     fontFamily: 'monospace',
+                    fontVariantNumeric: 'tabular-nums',
                     fontSize: { xs: '1.5rem', sm: '1.75rem' },
                     mb: 0.25
                   }}

@@ -32,10 +32,12 @@ import {
   Contacts as ContactsIcon,
   Whatshot as WhatshotIcon,
   ShowChart as MarketsIcon,
+  Security as SecurityIcon,
   Notifications as NotificationsIcon,
   Logout as LogoutIcon,
   OpenInNew as ExternalIcon,
 } from '@mui/icons-material'
+import { DrawerHeader } from './HudPrimitives'
 import WalletHelp from './WalletHelp'
 import AddressBookDialog from './AddressBookDialog'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
@@ -49,6 +51,7 @@ const navItems = [
   { label: 'History', path: '/transfers', icon: <HistoryIcon sx={{ fontSize: '1.1rem' }} /> },
   { label: 'Memecoins', path: '/memecoins', icon: <WhatshotIcon sx={{ fontSize: '1.1rem' }} /> },
   { label: 'Markets', path: '/markets', icon: <MarketsIcon sx={{ fontSize: '1.1rem' }} /> },
+  { label: 'Risk Analysis', path: '/analysis', icon: <SecurityIcon sx={{ fontSize: '1.1rem' }} /> },
 ]
 
 type AlertSeverity = 'error' | 'warning' | 'info'
@@ -187,14 +190,7 @@ function NotificationBell() {
         }}
       >
         <Box sx={{ p: 2.5, height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: 'text.primary' }}>
-              Notifications
-            </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)} size="small">
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
+          <DrawerHeader color="#14B8A6" onClose={() => setDrawerOpen(false)}>Notifications</DrawerHeader>
           {alerts.length === 0 ? (
             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
@@ -489,7 +485,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 alignItems: 'center',
                 gap: 1,
                 p: 0.75,
-                borderRadius: '8px',
+                borderRadius: '10px',
                 bgcolor: (theme) => theme.palette.custom.subtleBg,
                 border: 1,
                 borderColor: walletMenuOpen ? 'primary.main' : 'divider',

@@ -1,4 +1,6 @@
-import { Box, Container, Typography } from '@mui/material'
+import { Box, Container } from '@mui/material'
+import { Dashboard as DashboardIcon } from '@mui/icons-material'
+import { PageHeader } from './components/HudPrimitives'
 import BalancesCard from './components/BalancesCard'
 import ActionsForm from './components/ActionsForm'
 import EventsTable from './components/EventsTable'
@@ -12,26 +14,12 @@ import NetworkHealthPanel from './components/NetworkHealthPanel'
 export default function Dashboard() {
   return (
     <PageTransition>
-      <Container maxWidth="lg" sx={{ py: 3, position: 'relative', zIndex: 1 }}>
-        {/* Compact Header */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 600,
-              fontSize: { xs: '1.5rem', sm: '1.75rem' },
-              color: 'text.primary',
-            }}
-          >
-            Dashboard
-          </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: 'text.secondary', fontSize: '0.875rem' }}
-        >
-          Manage ERC20 tokens on Sepolia
-        </Typography>
-      </Box>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 }, position: 'relative', zIndex: 1 }}>
+        <PageHeader
+          icon={<DashboardIcon sx={{ fontSize: '1rem', color: '#14B8A6' }} />}
+          title="Dashboard"
+          subtitle="Manage ERC20 tokens on Sepolia"
+        />
 
       {/* Token Performance Snapshot */}
       <TokenPerformanceWidget />

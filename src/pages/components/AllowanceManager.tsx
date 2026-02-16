@@ -1,7 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
-  Card,
-  CardContent,
   Typography,
   Box,
   IconButton,
@@ -18,6 +16,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material'
+import { SectionHeader, HudCard } from './HudPrimitives'
 import { useAppStore } from '../store/useAppStore'
 import { useCustomTokensStore } from '../../stores/useCustomTokensStore'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
@@ -175,8 +174,9 @@ export default function AllowanceManager() {
   if (!hasApprovals && !loading) return null
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', border: 1, borderColor: 'divider', boxShadow: 'none' }}>
-      <CardContent sx={{ p: 3 }}>
+    <HudCard>
+      <Box sx={{ p: 3 }}>
+        <SectionHeader>Allowance Manager</SectionHeader>
         <Box
           onClick={() => setExpanded(!expanded)}
           sx={{
@@ -190,10 +190,10 @@ export default function AllowanceManager() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <SecurityIcon sx={{ color: 'warning.main', fontSize: 24 }} />
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-              Allowance Manager
+              Allowances
             </Typography>
             {entries.length > 0 && (
-              <Chip label={entries.length} size="small" color="warning" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
+              <Chip label={entries.length} size="small" color="warning" variant="outlined" sx={{ height: 20, fontSize: '0.7rem', borderRadius: '6px' }} />
             )}
           </Box>
           <IconButton size="small">
@@ -232,7 +232,7 @@ export default function AllowanceManager() {
                         flexWrap: 'wrap',
                       }}
                     >
-                      <Chip label={entry.token} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+                      <Chip label={entry.token} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px', height: 30, fontSize: '0.72rem' }} />
                       <CopyableSpender address={entry.spender} />
                       <Typography
                         variant="body2"
@@ -263,7 +263,7 @@ export default function AllowanceManager() {
             )}
           </Box>
         </Collapse>
-      </CardContent>
-    </Card>
+      </Box>
+    </HudCard>
   )
 }

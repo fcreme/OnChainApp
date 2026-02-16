@@ -11,11 +11,9 @@ import {
   Button,
 } from '@mui/material'
 import {
-  Close as CloseIcon,
   ContentCopy as CopyIcon,
   Check as CheckIcon,
   OpenInNew as ExternalIcon,
-  StickyNote2 as NoteIcon,
 } from '@mui/icons-material'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AppEvent } from '../store/useAppStore'
@@ -28,6 +26,7 @@ import { config } from '../../lib/web3'
 import { getPublicClient } from 'wagmi/actions'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'viem'
+import { DrawerHeader, SectionHeader } from './HudPrimitives'
 
 const MAX_UINT256 = 2n ** 256n - 1n
 const UNLIMITED_THRESHOLD = MAX_UINT256 / 2n
@@ -171,230 +170,203 @@ export default function TransactionDetailDrawer({ open, onClose, event }: Props)
                 overflowY: 'auto',
               }}
             >
-              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column' }}>
-                {/* Header */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              {/* Header — HUD DrawerHeader */}
+              <DrawerHeader
+                color={
+                  event.type.toLowerCase() === 'transfer' ? '#a4cf5e'
+                  : event.type.toLowerCase() === 'approval' ? '#ffb347'
+                  : '#14B8A6'
+                }
+                onClose={onClose}
+              >
+                <Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: 'text.primary', lineHeight: 1.2 }}>
                     Transaction Details
                   </Typography>
-                  <IconButton onClick={onClose} size="small">
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-
-                {/* Type, Token, Source chips */}
-                <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-                  <Chip label={event.type} color={eventColor as 'success' | 'warning' | 'info' | 'default'} size="small" variant="outlined" />
-                  <Chip label={event.token} size="small" variant="outlined" />
-                  {event.source && (
-                    <Chip
-                      label={event.source === 'local' ? 'Local' : 'On-chain'}
-                      size="small"
-                      variant="outlined"
-                      sx={{ borderColor: 'text.secondary', color: 'text.secondary' }}
-                    />
-                  )}
-                </Box>
-
-                <Divider sx={{ mb: 3 }} />
-
-                {/* Detail card */}
-                <Box
-                  sx={{
-                    bgcolor: (theme) => theme.palette.custom.subtleBg,
-                    borderRadius: '8px',
-                    p: 2.5,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2.5,
-                  }}
-                >
-                  {/* Amount */}
-                  <Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      Amount
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mt: 0.5 }}>
-                      {event.amount} {event.token}
-                    </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                    <Chip label={event.type} color={eventColor as 'success' | 'warning' | 'info' | 'default'} size="small" variant="outlined" />
+                    <Chip label={event.token} size="small" variant="outlined" />
+                    {event.source && (
+                      <Chip
+                        label={event.source === 'local' ? 'Local' : 'On-chain'}
+                        size="small"
+                        variant="outlined"
+                        sx={{ borderColor: 'text.secondary', color: 'text.secondary' }}
+                      />
+                    )}
                   </Box>
+                </Box>
+              </DrawerHeader>
 
-                  {/* From */}
-                  {event.from && (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        From
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', wordBreak: 'break-all', color: 'text.primary' }}
-                        >
-                          {event.from}
-                        </Typography>
-                        <CopyButton text={event.from} />
-                      </Box>
-                    </Box>
-                  )}
+              <Box sx={{ px: 2.5, pb: 2.5, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {/* Amount */}
+                <Box>
+                  <SectionHeader>Amount</SectionHeader>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
+                    {event.amount} {event.token}
+                  </Typography>
+                </Box>
 
-                  {/* To / Spender */}
-                  {event.to && (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {toLabel}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', wordBreak: 'break-all', color: 'text.primary' }}
-                        >
-                          {event.to}
-                        </Typography>
-                        <CopyButton text={event.to} />
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* Tx Hash */}
+                {/* From */}
+                {event.from && (
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                      Transaction Hash
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                    <SectionHeader>From</SectionHeader>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography
                         variant="body2"
                         sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', wordBreak: 'break-all', color: 'text.primary' }}
                       >
-                        {event.tx}
+                        {event.from}
                       </Typography>
-                      <CopyButton text={event.tx} />
-                      <Tooltip title="View on Etherscan">
-                        <IconButton
-                          size="small"
-                          component="a"
-                          href={`${explorerUrl}/tx/${event.tx}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{ p: 0.25, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-                        >
-                          <ExternalIcon sx={{ fontSize: '0.875rem' }} />
-                        </IconButton>
-                      </Tooltip>
+                      <CopyButton text={event.from} />
                     </Box>
                   </Box>
+                )}
 
-                  {/* Timestamp */}
-                  {event.timestamp && (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Timestamp
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.primary', mt: 0.5 }}>
-                        {new Date(event.timestamp).toLocaleString()}
-                      </Typography>
-                    </Box>
-                  )}
-
-                  {/* Remaining Allowance (Approval events only) */}
-                  {event.type === 'Approval' && (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Current Remaining Allowance
-                      </Typography>
-                      {loadingAllowance ? (
-                        <Skeleton variant="text" width={120} sx={{ mt: 0.5 }} />
-                      ) : allowance !== null ? (
-                        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, mt: 0.5 }}>
-                          {allowance} {allowance !== 'Unlimited' ? event.token : ''}
-                        </Typography>
-                      ) : (
-                        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                          Unable to fetch
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-
-                  {/* Transaction Note */}
+                {/* To / Spender */}
+                {event.to && (
                   <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                      <NoteIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Note
-                      </Typography>
-                    </Box>
-                    {editingNote ? (
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <TextField
-                          size="small"
-                          multiline
-                          minRows={2}
-                          maxRows={4}
-                          placeholder="Add a note about this transaction..."
-                          value={noteText}
-                          onChange={(e) => setNoteText(e.target.value)}
-                          autoFocus
-                          sx={{
-                            '& .MuiOutlinedInput-root': { fontSize: '0.8125rem' },
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: (theme: any) => theme.palette.custom.subtleBorder,
-                            },
-                          }}
-                        />
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => {
-                              setNote(event.tx, noteText)
-                              setEditingNote(false)
-                            }}
-                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="small"
-                            onClick={() => {
-                              setNoteText(savedNote || '')
-                              setEditingNote(false)
-                            }}
-                            sx={{ textTransform: 'none', fontSize: '0.75rem', color: 'text.secondary' }}
-                          >
-                            Cancel
-                          </Button>
-                        </Box>
-                      </Box>
-                    ) : savedNote ? (
+                    <SectionHeader>{toLabel}</SectionHeader>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography
                         variant="body2"
-                        onClick={() => setEditingNote(true)}
-                        sx={{
-                          color: 'text.primary',
-                          cursor: 'pointer',
-                          p: 1,
-                          borderRadius: '4px',
-                          '&:hover': { bgcolor: (theme: any) => theme.palette.custom.hoverBg },
-                        }}
+                        sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', wordBreak: 'break-all', color: 'text.primary' }}
                       >
-                        {savedNote}
+                        {event.to}
+                      </Typography>
+                      <CopyButton text={event.to} />
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Tx Hash */}
+                <Box>
+                  <SectionHeader>Transaction Hash</SectionHeader>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', wordBreak: 'break-all', color: 'text.primary' }}
+                    >
+                      {event.tx}
+                    </Typography>
+                    <CopyButton text={event.tx} />
+                    <Tooltip title="View on Etherscan">
+                      <IconButton
+                        size="small"
+                        component="a"
+                        href={`${explorerUrl}/tx/${event.tx}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ p: 0.25, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                      >
+                        <ExternalIcon sx={{ fontSize: '0.875rem' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+
+                {/* Timestamp */}
+                {event.timestamp && (
+                  <Box>
+                    <SectionHeader>Timestamp</SectionHeader>
+                    <Typography variant="body2" sx={{ color: 'text.primary', fontFamily: 'monospace' }}>
+                      {new Date(event.timestamp).toLocaleString()}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Remaining Allowance (Approval events only) */}
+                {event.type === 'Approval' && (
+                  <Box>
+                    <SectionHeader>Current Remaining Allowance</SectionHeader>
+                    {loadingAllowance ? (
+                      <Skeleton variant="text" width={120} />
+                    ) : allowance !== null ? (
+                      <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
+                        {allowance} {allowance !== 'Unlimited' ? event.token : ''}
                       </Typography>
                     ) : (
-                      <Typography
-                        variant="body2"
-                        onClick={() => setEditingNote(true)}
-                        sx={{
-                          color: 'text.secondary',
-                          cursor: 'pointer',
-                          fontStyle: 'italic',
-                          fontSize: '0.8125rem',
-                          '&:hover': { color: 'primary.main' },
-                        }}
-                      >
-                        Click to add a note...
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Unable to fetch
                       </Typography>
                     )}
                   </Box>
+                )}
+
+                {/* Transaction Note */}
+                <Box>
+                  <SectionHeader>Note</SectionHeader>
+                  {editingNote ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <TextField
+                        size="small"
+                        multiline
+                        minRows={2}
+                        maxRows={4}
+                        placeholder="Add a note about this transaction..."
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                        autoFocus
+                        sx={{
+                          '& .MuiOutlinedInput-root': { fontSize: '0.8125rem', borderRadius: '10px' },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: (theme: any) => theme.palette.custom.subtleBorder,
+                          },
+                        }}
+                      />
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => {
+                            setNote(event.tx, noteText)
+                            setEditingNote(false)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            setNoteText(savedNote || '')
+                            setEditingNote(false)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: '0.75rem', color: 'text.secondary' }}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </Box>
+                  ) : savedNote ? (
+                    <Typography
+                      variant="body2"
+                      onClick={() => setEditingNote(true)}
+                      sx={{
+                        color: 'text.primary',
+                        cursor: 'pointer',
+                        p: 1,
+                        borderRadius: '10px',
+                        '&:hover': { bgcolor: (theme: any) => theme.palette.custom.hoverBg },
+                      }}
+                    >
+                      {savedNote}
+                    </Typography>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      onClick={() => setEditingNote(true)}
+                      sx={{
+                        color: 'text.secondary',
+                        cursor: 'pointer',
+                        fontStyle: 'italic',
+                        fontSize: '0.8125rem',
+                        '&:hover': { color: 'primary.main' },
+                      }}
+                    >
+                      Click to add a note...
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>

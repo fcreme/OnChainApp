@@ -3,7 +3,6 @@ import {
   Dialog,
   Box,
   Typography,
-  IconButton,
   Chip,
   Divider,
   Skeleton,
@@ -13,7 +12,6 @@ import {
 import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  ArrowBack as BackIcon,
   ContentCopy as CopyIcon,
   OpenInNew as ExternalIcon,
 } from '@mui/icons-material'
@@ -21,6 +19,7 @@ import type { MarketCoin } from '../../lib/coingecko'
 import { formatPrice, formatMarketCap, formatSupply } from '../../lib/coingecko'
 import { useThemeStore } from '../../stores/useThemeStore'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { DrawerHeader, SectionHeader } from './HudPrimitives'
 
 interface CoinLinks {
   homepage: string | null
@@ -109,13 +108,7 @@ function ExpandableDescription({ text }: { text: string }) {
   )
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1 }}>
-      {children}
-    </Typography>
-  )
-}
+// SectionLabel replaced by SectionHeader from HudPrimitives
 
 function StatCell({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
@@ -123,7 +116,7 @@ function StatCell({ label, value, color }: { label: string; value: string | numb
       <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mb: 0.25, textTransform: 'uppercase', letterSpacing: 0.3 }}>
         {label}
       </Typography>
-      <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: color ?? 'text.primary' }}>
+      <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: color ?? 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Typography>
     </Box>
@@ -137,7 +130,7 @@ function StatsRow({ items }: { items: { label: string; value: string | number; c
       gridTemplateColumns: `repeat(${items.length}, 1fr)`,
       gap: 0.5,
       p: 1.25,
-      borderRadius: '8px',
+      borderRadius: '10px',
       bgcolor: (theme: any) => theme.palette.custom.subtleBg,
       border: 1,
       borderColor: 'divider',
@@ -153,7 +146,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
       <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{label}</Typography>
-      <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary' }}>
+      <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </Typography>
     </Box>
@@ -166,7 +159,7 @@ function PctChip({ label, value }: { label: string; value: number }) {
     <Box sx={{
       textAlign: 'center',
       p: 1,
-      borderRadius: '8px',
+      borderRadius: '10px',
       bgcolor: (theme: any) => theme.palette.custom.subtleBg,
       border: 1,
       borderColor: 'divider',
@@ -177,6 +170,8 @@ function PctChip({ label, value }: { label: string; value: number }) {
       <Typography sx={{
         fontSize: '0.8rem',
         fontWeight: 700,
+        fontFamily: 'monospace',
+        fontVariantNumeric: 'tabular-nums',
         color: value === 0 ? 'text.secondary' : isPos ? '#a4cf5e' : '#f45b5b',
       }}>
         {isPos ? '+' : ''}{value.toFixed(2)}%
@@ -212,18 +207,9 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
       PaperProps={{ sx: { bgcolor: 'background.default' } }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Top bar */}
-        <Box sx={{
-          px: 3,
-          py: 1.5,
-          bgcolor: 'background.paper',
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton onClick={onClose} size="small" sx={{ mr: 0.5 }}>
-              <BackIcon />
-            </IconButton>
+        {/* Top bar — HUD DrawerHeader */}
+        <DrawerHeader color={isPositive ? '#a4cf5e' : '#f45b5b'} onClose={onClose}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
             <Box
               component="img"
               src={coin.image}
@@ -279,6 +265,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
                   height: 22,
                   fontSize: '0.65rem',
                   fontWeight: 500,
+                  fontFamily: 'monospace',
                   bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                   color: 'text.secondary',
                   border: 0,
@@ -299,6 +286,8 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
                   height: 22,
                   fontSize: '0.65rem',
                   fontWeight: 600,
+                  fontFamily: 'monospace',
+                  fontVariantNumeric: 'tabular-nums',
                   bgcolor: t.value === 0 ? (theme: any) => theme.palette.custom.subtleBg
                     : t.value > 0 ? 'rgba(164, 207, 94, 0.1)' : 'rgba(244, 91, 91, 0.1)',
                   color: t.value === 0 ? 'text.secondary' : t.value > 0 ? '#a4cf5e' : '#f45b5b',
@@ -307,21 +296,21 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
               />
             ))}
             <Box sx={{ flex: 1 }} />
-            <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'text.primary', whiteSpace: 'nowrap' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'text.primary', whiteSpace: 'nowrap', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
               {formatPrice(coin.price)}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, mr: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
               {isPositive ? (
                 <TrendingUpIcon sx={{ fontSize: '0.9rem', color: '#a4cf5e' }} />
               ) : (
                 <TrendingDownIcon sx={{ fontSize: '0.9rem', color: '#f45b5b' }} />
               )}
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: isPositive ? '#a4cf5e' : '#f45b5b' }}>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: isPositive ? '#a4cf5e' : '#f45b5b', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                 {isPositive ? '+' : ''}{coin.priceChangePct24h.toFixed(2)}%
               </Typography>
             </Box>
           </Box>
-        </Box>
+        </DrawerHeader>
 
         {/* Main content */}
         <Box sx={{
@@ -415,7 +404,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
 
             {/* Key metrics */}
             <Box>
-              <SectionLabel>Key Metrics</SectionLabel>
+              <SectionHeader>Key Metrics</SectionHeader>
               <StatsRow items={[
                 { label: 'MCap', value: formatMarketCap(coin.marketCap) },
                 { label: 'FDV', value: formatMarketCap(coin.fdv) },
@@ -425,7 +414,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
 
             {/* Price change across timeframes */}
             <Box>
-              <SectionLabel>Price Change</SectionLabel>
+              <SectionHeader>Price Change</SectionHeader>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0.75 }}>
                 <PctChip label="1H" value={coin.priceChangePct1h} />
                 <PctChip label="24H" value={coin.priceChangePct24h} />
@@ -437,19 +426,19 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
 
             {/* 24h Range */}
             <Box>
-              <SectionLabel>24h Range</SectionLabel>
+              <SectionHeader>24h Range</SectionHeader>
               <Box sx={{
                 p: 1.5,
-                borderRadius: '8px',
+                borderRadius: '10px',
                 bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                 border: 1,
                 borderColor: 'divider',
               }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
-                  <Typography sx={{ fontSize: '0.7rem', color: '#f45b5b', fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#f45b5b', fontWeight: 600, fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                     {formatPrice(coin.low24h)}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.7rem', color: '#a4cf5e', fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#a4cf5e', fontWeight: 600, fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                     {formatPrice(coin.high24h)}
                   </Typography>
                 </Box>
@@ -469,7 +458,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
                     },
                   }}
                 />
-                <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.5, textAlign: 'center' }}>
+                <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', mt: 0.5, textAlign: 'center', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                   Current: {formatPrice(coin.price)}
                 </Typography>
               </Box>
@@ -479,7 +468,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
 
             {/* Supply info */}
             <Box>
-              <SectionLabel>Supply</SectionLabel>
+              <SectionHeader>Supply</SectionHeader>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 <InfoRow label="Circulating" value={formatSupply(coin.circulatingSupply, coin.symbol)} />
                 {coin.totalSupply && (
@@ -492,7 +481,7 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
                   <Box sx={{ mt: 0.5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
                       <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>Circulating / Max</Typography>
-                      <Typography sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'text.primary' }}>
+                      <Typography sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                         {supplyPct.toFixed(1)}%
                       </Typography>
                     </Box>
@@ -515,21 +504,23 @@ export default function MarketDetailDrawer({ open, onClose, coin }: Props) {
 
             {/* ATH */}
             <Box>
-              <SectionLabel>All-Time High</SectionLabel>
+              <SectionHeader>All-Time High</SectionHeader>
               <Box sx={{
                 p: 1.5,
-                borderRadius: '8px',
+                borderRadius: '10px',
                 bgcolor: (theme: any) => theme.palette.custom.subtleBg,
                 border: 1,
                 borderColor: 'divider',
               }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: 'text.primary' }}>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: 'text.primary', fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}>
                     {formatPrice(coin.ath)}
                   </Typography>
                   <Typography sx={{
                     fontSize: '0.75rem',
                     fontWeight: 600,
+                    fontFamily: 'monospace',
+                    fontVariantNumeric: 'tabular-nums',
                     color: coin.athChangePct >= 0 ? '#a4cf5e' : '#f45b5b',
                   }}>
                     {coin.athChangePct.toFixed(1)}%

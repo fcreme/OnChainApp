@@ -61,6 +61,8 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
     ? '0 0 12px rgba(244, 91, 91, 0.25)'
     : undefined
 
+  const accentColor = isPositive ? '#a4cf5e' : '#f45b5b'
+
   return (
     <Box
       onClick={() => onSelect?.(coin)}
@@ -68,53 +70,82 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
         bgcolor: 'background.paper',
         border: 1,
         borderColor: flashBorder ?? 'divider',
-        borderRadius: '12px',
-        p: 2,
+        borderRadius: '10px',
+        p: 0,
         cursor: 'pointer',
-        transition: 'all 0.3s ease',
+        transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         boxShadow: flashShadow ?? 'none',
+        overflow: 'hidden',
+        position: 'relative',
         '&:hover': {
-          borderColor: flash ? flashBorder : 'primary.main',
-          transform: 'translateY(-2px)',
-          boxShadow: '0 4px 12px rgba(20, 184, 166, 0.15)',
+          borderColor: flash ? flashBorder : `${accentColor}50`,
+          transform: 'translateY(-1px)',
+          boxShadow: `0 4px 20px ${accentColor}12, 0 0 0 1px ${accentColor}15`,
+          '& .card-glow': { opacity: 1 },
         },
       }}
     >
+      {/* Top accent line */}
+      <Box
+        sx={{
+          height: '2px',
+          background: `linear-gradient(90deg, ${accentColor}00, ${accentColor}80, ${accentColor}00)`,
+        }}
+      />
+
+      {/* Hover glow */}
+      <Box
+        className="card-glow"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '60px',
+          background: `linear-gradient(180deg, ${accentColor}06, transparent)`,
+          opacity: 0,
+          transition: 'opacity 0.2s ease',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <Box sx={{ p: 2, position: 'relative' }}>
       {/* Header: rank + image + name + symbol */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 600, minWidth: 20 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5 }}>
+        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 600, minWidth: 20, fontVariantNumeric: 'tabular-nums' }}>
           #{coin.rank}
         </Typography>
         <Box
           component="img"
           src={coin.image}
           alt={coin.symbol}
-          sx={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0 }}
+          sx={{ width: 34, height: 34, borderRadius: '8px', flexShrink: 0, border: '1px solid', borderColor: 'divider' }}
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
             sx={{
-              fontWeight: 600,
-              fontSize: '0.875rem',
+              fontWeight: 700,
+              fontSize: '0.82rem',
               color: 'text.primary',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              lineHeight: 1.2,
+              letterSpacing: '-0.01em',
             }}
           >
             {coin.name}
           </Typography>
-          <Chip
-            label={coin.symbol.toUpperCase()}
-            size="small"
+          <Typography
             sx={{
-              height: 20,
               fontSize: '0.65rem',
-              fontWeight: 600,
-              bgcolor: (theme) => theme.palette.custom.subtleBg,
               color: 'text.secondary',
+              fontWeight: 500,
+              mt: 0.25,
             }}
-          />
+          >
+            {coin.symbol.toUpperCase()}
+          </Typography>
         </Box>
       </Box>
 
@@ -123,6 +154,7 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
         <Typography component="span" sx={{
           fontWeight: 700,
           fontSize: '1.1rem',
+          fontVariantNumeric: 'tabular-nums',
           color: flash === 'up' ? '#a4cf5e' : flash === 'down' ? '#f45b5b' : 'text.primary',
           transition: 'color 0.3s ease',
         }}>
@@ -173,6 +205,7 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
           color={coin.priceChangePct7d >= 0 ? '#a4cf5e' : '#f45b5b'}
         />
       </Box>
+      </Box>
     </Box>
   )
 }
@@ -180,8 +213,8 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
 function StatRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{label}</Typography>
-      <Typography component="span" sx={{ fontSize: '0.7rem', fontWeight: 600, color: color ?? 'text.primary' }}>
+      <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>{label}</Typography>
+      <Typography component="span" sx={{ fontSize: '0.7rem', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: color ?? 'text.primary' }}>
         <AnimatedValue value={value} />
       </Typography>
     </Box>
@@ -195,13 +228,14 @@ export function MarketCardSkeleton() {
         bgcolor: 'background.paper',
         border: 1,
         borderColor: 'divider',
-        borderRadius: '12px',
+        borderRadius: '10px',
         p: 2,
+        overflow: 'hidden',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
         <Skeleton variant="text" width={20} height={16} />
-        <Skeleton variant="circular" width={32} height={32} />
+        <Skeleton variant="rounded" width={34} height={34} sx={{ borderRadius: '8px' }} />
         <Box sx={{ flex: 1 }}>
           <Skeleton width="60%" height={18} />
           <Skeleton width="30%" height={16} sx={{ mt: 0.5 }} />
