@@ -34,8 +34,35 @@ export default function Settings() {
   const weightsSum = weights.amount + weights.address + weights.time + weights.token
   const isValid = weightsSum === 100
 
-  const handleWeightChange = (key: keyof typeof weights, value: number) => {
-    setWeights((prev) => ({ ...prev, [key]: value }))
+  const handleWeightChange = (changed: keyof typeof weights, value: number) => {
+    setWeights((prev) => {
+      const others = (Object.keys(prev) as Array<keyof typeof prev>).filter((k) => k !== changed)
+      const oldOthersSum = others.reduce((sum, k) => sum + prev[k], 0)
+      const newOthersTarget = 100 - value
+
+      if (oldOthersSum === 0) {
+        // Distribute equally among others
+        const each = Math.floor(newOthersTarget / others.length)
+        const remainder = newOthersTarget - each * others.length
+        const next = { ...prev, [changed]: value }
+        others.forEach((k, i) => { next[k] = each + (i < remainder ? 1 : 0) })
+        return next
+      }
+
+      // Scale others proportionally
+      const next = { ...prev, [changed]: value }
+      let distributed = 0
+      others.forEach((k, i) => {
+        if (i === others.length - 1) {
+          next[k] = Math.max(0, newOthersTarget - distributed)
+        } else {
+          const scaled = Math.round((prev[k] / oldOthersSum) * newOthersTarget)
+          next[k] = Math.max(0, scaled)
+          distributed += next[k]
+        }
+      })
+      return next
+    })
     setDirty(true)
   }
 
