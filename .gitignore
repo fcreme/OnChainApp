@@ -34,3 +34,7 @@ cypress/downloads/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Server
+server/dist
+server/node_modules

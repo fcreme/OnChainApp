@@ -5,18 +5,25 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "npm run dev & npm run dev:server",
     "build": "tsc -b && vite build",
+    "build:server": "npm run build --prefix server",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest",
+    "test:server": "npm test --prefix server",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:migrate": "npm run migrate --prefix server",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

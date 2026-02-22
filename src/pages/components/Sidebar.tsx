@@ -36,6 +36,9 @@ import {
   Notifications as NotificationsIcon,
   Logout as LogoutIcon,
   OpenInNew as ExternalIcon,
+  CompareArrows as CompareArrowsIcon,
+  Receipt as ReceiptIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material'
 import { DrawerHeader } from './HudPrimitives'
 import WalletHelp from './WalletHelp'
@@ -48,10 +51,13 @@ const SIDEBAR_WIDTH = 210
 
 const navItems = [
   { label: 'Dashboard', path: '/', icon: <DashboardIcon sx={{ fontSize: '1.1rem' }} /> },
-  { label: 'History', path: '/transfers', icon: <HistoryIcon sx={{ fontSize: '1.1rem' }} /> },
+  { label: 'Transactions', path: '/transfers', icon: <HistoryIcon sx={{ fontSize: '1.1rem' }} /> },
+  { label: 'Reconciliation', path: '/reconciliation', icon: <CompareArrowsIcon sx={{ fontSize: '1.1rem' }} /> },
+  { label: 'Audit', path: '/audit', icon: <ReceiptIcon sx={{ fontSize: '1.1rem' }} /> },
   { label: 'Memecoins', path: '/memecoins', icon: <WhatshotIcon sx={{ fontSize: '1.1rem' }} /> },
   { label: 'Markets', path: '/markets', icon: <MarketsIcon sx={{ fontSize: '1.1rem' }} /> },
   { label: 'Risk Analysis', path: '/analysis', icon: <SecurityIcon sx={{ fontSize: '1.1rem' }} /> },
+  { label: 'Settings', path: '/settings', icon: <SettingsIcon sx={{ fontSize: '1.1rem' }} /> },
 ]
 
 type AlertSeverity = 'error' | 'warning' | 'info'
