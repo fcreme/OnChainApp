@@ -12,7 +12,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material'
-import { SectionHeader, HudCard } from './HudPrimitives'
+import { SectionHeader } from './HudPrimitives'
 import {
   Refresh as RefreshIcon,
   AccountBalance as BalanceIcon,

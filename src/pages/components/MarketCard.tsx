@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Box, Typography, Chip, Skeleton } from '@mui/material'
+import { Box, Typography, Skeleton } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,

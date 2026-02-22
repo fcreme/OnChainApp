@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Container, Box, Button, Typography } from '@mui/material'
+import { Container, Box, Button } from '@mui/material'
 import {
   CompareArrows as CompareArrowsIcon,
   PlayArrow as RunIcon,
@@ -151,10 +151,10 @@ export default function Reconciliation() {
 
         {/* Stats */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
-          <StatCard label="Total Anchors" value={stats?.total_anchors ?? '-'} color="#14B8A6" index={0} />
-          <StatCard label="Pending Claims" value={stats?.pending_claims ?? '-'} color="#ffb347" index={1} />
-          <StatCard label="Reconciled" value={stats?.reconciled ?? '-'} color="#a4cf5e" index={2} />
-          <StatCard label="Match Rate" value={stats ? `${((stats.reconciled / Math.max(stats.total_anchors, 1)) * 100).toFixed(0)}%` : '-'} color="#8b5cf6" index={3} />
+          <StatCard label="Total Anchors" count={stats?.total_anchors ?? '-'} color="#14B8A6" index={0} />
+          <StatCard label="Pending Claims" count={stats?.pending_claims ?? '-'} color="#ffb347" index={1} />
+          <StatCard label="Reconciled" count={stats?.reconciled ?? '-'} color="#a4cf5e" index={2} />
+          <StatCard label="Match Rate" count={stats ? `${((stats.reconciled / Math.max(stats.total_anchors, 1)) * 100).toFixed(0)}%` : '-'} color="#8b5cf6" index={3} />
         </Box>
 
         {/* Actions bar */}
@@ -220,8 +220,8 @@ export default function Reconciliation() {
         {/* Suggestions list */}
         {!isLoading && suggestions.length === 0 ? (
           <EmptyState
-            title="No suggestions yet"
-            description="Import claims and run the matching engine to generate match suggestions."
+            message="No suggestions yet"
+            submessage="Import claims and run the matching engine to generate match suggestions."
           />
         ) : (
           <SuggestionsTable

@@ -8,15 +8,15 @@ interface AuditState {
   page: number
   totalPages: number
   total: number
-  actionFilter: string
-  entityFilter: string
-  actorFilter: string
+  actionFilter: string | undefined
+  entityFilter: string | undefined
+  actorFilter: string | undefined
 
   fetchLogs: () => Promise<void>
   setPage: (page: number) => void
-  setActionFilter: (action: string) => void
-  setEntityFilter: (entity: string) => void
-  setActorFilter: (actor: string) => void
+  setActionFilter: (action: string | undefined) => void
+  setEntityFilter: (entity: string | undefined) => void
+  setActorFilter: (actor: string | undefined) => void
 }
 
 export const useAuditStore = create<AuditState>((set, get) => ({
@@ -25,9 +25,9 @@ export const useAuditStore = create<AuditState>((set, get) => ({
   page: 1,
   totalPages: 1,
   total: 0,
-  actionFilter: '',
-  entityFilter: '',
-  actorFilter: '',
+  actionFilter: undefined,
+  entityFilter: undefined,
+  actorFilter: undefined,
 
   fetchLogs: async () => {
     const { page, actionFilter, entityFilter, actorFilter } = get()

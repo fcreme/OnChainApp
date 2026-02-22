@@ -1,4 +1,4 @@
-import type { ReactNode, ElementType } from 'react'
+import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { Box, Typography, TextField, Chip, IconButton, InputAdornment } from '@mui/material'
 import {
@@ -90,7 +90,7 @@ const statCardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { delay: i * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 }
 

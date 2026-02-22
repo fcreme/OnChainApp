@@ -49,8 +49,8 @@ export default function Audit() {
         {/* Log table */}
         {!isLoading && logs.length === 0 ? (
           <EmptyState
-            title="No audit entries"
-            description="Actions like importing claims, running matching, and approving matches will appear here."
+            message="No audit entries"
+            submessage="Actions like importing claims, running matching, and approving matches will appear here."
           />
         ) : (
           <AuditLogTable

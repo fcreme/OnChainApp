@@ -71,10 +71,10 @@ export default function Settings() {
 
         {/* Current weights preview */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: 3 }}>
-          <StatCard label="Amount" value={weights.amount} color="#14B8A6" index={0} />
-          <StatCard label="Address" value={weights.address} color="#a4cf5e" index={1} />
-          <StatCard label="Time" value={weights.time} color="#ffb347" index={2} />
-          <StatCard label="Token" value={weights.token} color="#8b5cf6" index={3} />
+          <StatCard label="Amount" count={weights.amount} color="#14B8A6" index={0} />
+          <StatCard label="Address" count={weights.address} color="#a4cf5e" index={1} />
+          <StatCard label="Time" count={weights.time} color="#ffb347" index={2} />
+          <StatCard label="Token" count={weights.token} color="#8b5cf6" index={3} />
         </Box>
 
         {!isValid && (

@@ -34,10 +34,10 @@ function ReconciliationSummary() {
 
       {/* Recon stats */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
-        <StatCard label="Anchors" value={stats?.total_anchors ?? '-'} color="#14B8A6" index={0} />
-        <StatCard label="Pending" value={stats?.pending_claims ?? '-'} color="#ffb347" index={1} />
-        <StatCard label="Reconciled" value={stats?.reconciled ?? '-'} color="#a4cf5e" index={2} />
-        <StatCard label="Suggestions" value={stats?.suggestions ?? '-'} color="#f45b5b" index={3} />
+        <StatCard label="Anchors" count={stats?.total_anchors ?? '-'} color="#14B8A6" index={0} />
+        <StatCard label="Pending" count={stats?.pending_claims ?? '-'} color="#ffb347" index={1} />
+        <StatCard label="Reconciled" count={stats?.reconciled ?? '-'} color="#a4cf5e" index={2} />
+        <StatCard label="Suggestions" count={stats?.suggestions ?? '-'} color="#f45b5b" index={3} />
       </Box>
 
       {/* Drift alerts */}
