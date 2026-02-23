@@ -36,7 +36,7 @@ export const config = createConfig({
       metadata: {
         name: 'Onchain',
         description: 'Modern DeFi token management interface',
-        url: 'https://tokenflow-app.vercel.app',
+        url: 'https://on-chain-app-git-main-felipe-cremerius-projects.vercel.app',
         icons: ['https://avatars.githubusercontent.com/u/37784886']
       }
     }),

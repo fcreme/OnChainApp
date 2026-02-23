@@ -1,96 +1,96 @@
-# Testnet Guide - TokenFlow
+# Testnet Guide - OnChain
 
-## ¿Qué es Testnet?
+## What is Testnet?
 
-Testnet es una red de prueba que simula la blockchain de Ethereum pero sin usar dinero real. Es perfecta para:
+Testnet is a test network that simulates the Ethereum blockchain without using real money. It's perfect for:
 
-- ✅ Probar funcionalidades sin riesgo
-- ✅ Aprender sobre DeFi de forma segura
-- ✅ Desarrollar y debuggear aplicaciones
-- ✅ Experimentar con tokens y contratos
+- ✅ Testing features without risk
+- ✅ Learning about DeFi safely
+- ✅ Developing and debugging applications
+- ✅ Experimenting with tokens and contracts
 
-## 🚀 Cómo activar el modo Testnet
+## 🚀 How to Enable Testnet Mode
 
-### 1. Configuración automática
-La aplicación ya está configurada para usar **Sepolia Testnet** por defecto.
+### 1. Automatic Configuration
+The application is already configured to use **Sepolia Testnet** by default.
 
-### 2. Variables de entorno (opcional)
-Crea un archivo `.env` en la raíz del proyecto:
+### 2. Environment Variables (optional)
+Create a `.env` file in the project root:
 
 ```env
-# WalletConnect Project ID (opcional)
+# WalletConnect Project ID (optional)
 VITE_WALLETCONNECT_PROJECT_ID=demo
 
-# Sepolia RPC URL (opcional - usa el público por defecto)
+# Sepolia RPC URL (optional - uses public by default)
 VITE_SEPOLIA_RPC_URL=https://rpc.sepolia.org
 
-# Direcciones de contratos (ya configuradas)
+# Contract addresses (already configured)
 VITE_DAI_CONTRACT_ADDRESS=0x1D70D57ccD2798323232B2dD027B3aBcA5C00091
 VITE_USDC_CONTRACT_ADDRESS=0xC891481A0AaC630F4D89744ccD2C7D2C4215FD47
 ```
 
-## 💰 Obtener ETH de prueba
+## 💰 Getting Test ETH
 
-Para usar la aplicación necesitas ETH de prueba (no real):
+To use the application you need test ETH (not real):
 
-### Faucets recomendados:
-1. **Sepolia Faucet oficial**: https://sepoliafaucet.com/
+### Recommended Faucets:
+1. **Official Sepolia Faucet**: https://sepoliafaucet.com/
 2. **Alchemy Faucet**: https://sepoliafaucet.com/
 3. **Infura Faucet**: https://www.infura.io/faucet/sepolia
 
-### Pasos:
-1. Conecta tu wallet (MetaMask, etc.)
-2. Ve a uno de los faucets
-3. Pega tu dirección de wallet
-4. Recibe ETH de prueba (gratis)
+### Steps:
+1. Connect your wallet (MetaMask, etc.)
+2. Go to one of the faucets
+3. Paste your wallet address
+4. Receive test ETH (free)
 
-## 🔗 Enlaces útiles
+## 🔗 Useful Links
 
 - **Sepolia Explorer**: https://sepolia.etherscan.io
 - **Sepolia Faucet**: https://sepoliafaucet.com/
-- **Documentación Sepolia**: https://ethereum.org/en/developers/docs/networks/#sepolia
+- **Sepolia Documentation**: https://ethereum.org/en/developers/docs/networks/#sepolia
 
-## 🎯 Funcionalidades disponibles en Testnet
+## 🎯 Features Available on Testnet
 
-### Tokens de prueba:
+### Test Tokens:
 - **DAI Test**: `0x1D70D57ccD2798323232B2dD027B3aBcA5C00091`
 - **USDC Test**: `0xC891481A0AaC630F4D89744ccD2C7D2C4215FD47`
 
-### Operaciones disponibles:
-- ✅ Ver balances de tokens
-- ✅ Transferir tokens
-- ✅ Aprobar gastos
-- ✅ Minting de tokens (para testing)
-- ✅ Ver historial de transacciones
+### Available Operations:
+- ✅ View token balances
+- ✅ Transfer tokens
+- ✅ Approve spending
+- ✅ Token minting (for testing)
+- ✅ View transaction history
 
-## 🛡️ Seguridad
+## 🛡️ Security
 
-- **No uses dinero real** en testnet
-- Los tokens de testnet no tienen valor real
-- Las transacciones son gratuitas (solo gas de prueba)
-- Perfecto para experimentar sin riesgo
+- **Do not use real money** on testnet
+- Testnet tokens have no real value
+- Transactions are free (only test gas)
+- Perfect for experimenting without risk
 
-## 🔧 Solución de problemas
+## 🔧 Troubleshooting
 
 ### "Wrong Network Detected"
-- Asegúrate de estar conectado a Sepolia en tu wallet
-- En MetaMask: Settings → Networks → Add Network
+- Make sure you are connected to Sepolia in your wallet
+- In MetaMask: Settings → Networks → Add Network
 - Chain ID: 11155111
 - RPC URL: https://rpc.sepolia.org
 
 ### "Insufficient funds"
-- Obtén ETH de prueba de un faucet
-- Los faucets suelen dar 0.1-0.5 ETH de prueba
+- Get test ETH from a faucet
+- Faucets usually give 0.1-0.5 test ETH
 
-### Transacciones fallidas
-- Verifica que tienes suficiente ETH para gas
-- Asegúrate de estar en la red correcta
-- Revisa los logs en la consola del navegador
+### Failed Transactions
+- Verify you have enough ETH for gas
+- Make sure you are on the correct network
+- Check the logs in the browser console
 
-## 🎉 ¡Listo para probar!
+## 🎉 Ready to Test!
 
-Tu aplicación está configurada para testnet. Conecta tu wallet y comienza a experimentar de forma segura con DeFi.
+Your application is configured for testnet. Connect your wallet and start experimenting safely with DeFi.
 
 ---
 
-**Nota**: Esta es una aplicación de demostración. Los contratos y tokens son solo para propósitos educativos.
+**Note**: This is a demo application. The contracts and tokens are for educational purposes only.

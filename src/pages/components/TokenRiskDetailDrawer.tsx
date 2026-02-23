@@ -420,7 +420,7 @@ export default function TokenRiskDetailDrawer({ open, onClose, result }: Props) 
                 borderColor: 'divider',
               }}
             >
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={180} minWidth={0}>
                 <BarChart data={waterfallData} margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} vertical={false} />
                   <XAxis

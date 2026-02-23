@@ -296,7 +296,7 @@ export default function SigmoidChart({ results }: Props) {
 
       {/* Chart */}
       <Box sx={{ px: 1 }}>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={300} minWidth={0}>
           <ComposedChart margin={{ top: 10, right: 25, left: 10, bottom: 30 }}>
             {/* Colored zone backgrounds */}
             <ReferenceArea

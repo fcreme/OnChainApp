@@ -81,7 +81,7 @@ export default function PortfolioChart() {
     <HudCard sx={{ mb: 3 }}>
       <Box sx={{ p: 2.5 }}>
         <SectionHeader>Portfolio History</SectionHeader>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={250} minWidth={0}>
           <AreaChart data={snapshots}>
             <CartesianGrid
               strokeDasharray="3 3"

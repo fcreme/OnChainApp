@@ -11,7 +11,7 @@ A fintech-grade blockchain reconciliation platform that matches on-chain transac
 
 ## Live Demo
 
-**Deployed Application**: [View Live Demo](https://tokenflow-app.vercel.app/)
+**Deployed Application**: [View Live Demo](https://on-chain-app-git-main-felipe-cremerius-projects.vercel.app/)
 
 **GitHub Repository**: [Source Code](https://github.com/fcreme/OnChainApp)
 

@@ -86,7 +86,7 @@ export default function RiskDistributionChart({ results }: Props) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minHeight: 0 }}>
         {/* Chart with centered label */}
         <Box sx={{ position: 'relative', width: 180, height: 180, flexShrink: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <PieChart>
               <Pie
                 data={data}
