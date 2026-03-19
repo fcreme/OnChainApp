@@ -138,19 +138,36 @@ function useAlerts(): Alert[] {
   }, [transactionStatus, transactionHash, transactionError, lowEth, nativeBalance, latestLargeEvent])
 }
 
-const _seenIds = new Set<string>()
+const SEEN_ALERTS_KEY = 'onchain:seen-alert-ids'
+
+function loadSeenIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(SEEN_ALERTS_KEY)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function persistSeenIds(ids: Set<string>) {
+  localStorage.setItem(SEEN_ALERTS_KEY, JSON.stringify([...ids]))
+}
 
 function NotificationBell() {
   const alerts = useAlerts()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [, setTick] = useState(0)
+  const [seenIds, setSeenIds] = useState<Set<string>>(loadSeenIds)
 
-  const unseenCount = alerts.filter((a) => !_seenIds.has(a.id)).length
+  const unseenCount = alerts.filter((a) => !seenIds.has(a.id)).length
 
   const handleOpen = () => {
     setDrawerOpen(true)
-    for (const a of alerts) _seenIds.add(a.id)
-    setTick((t) => t + 1)
+    setSeenIds((prev) => {
+      const next = new Set(prev)
+      for (const a of alerts) next.add(a.id)
+      persistSeenIds(next)
+      return next
+    })
   }
 
   const severityColor = (s: AlertSeverity) => {

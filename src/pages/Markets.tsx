@@ -182,6 +182,7 @@ export default function Markets() {
                     stiffness: 340,
                     delay: Math.min(i * 0.03, 0.3),
                   }}
+                  style={{ height: '100%' }}
                 >
                   <MarketCard coin={coin} prevPrice={prevPrices[coin.id]} onSelect={setSelectedCoin} />
                 </motion.div>

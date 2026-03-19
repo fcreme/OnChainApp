@@ -72,12 +72,16 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
         borderColor: flashBorder ?? 'divider',
         borderRadius: '10px',
         p: 0,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         cursor: 'pointer',
         transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         boxShadow: flashShadow ?? 'none',
         overflow: 'hidden',
         position: 'relative',
         '&:hover': {
+          zIndex: 2,
           borderColor: flash ? flashBorder : `${accentColor}50`,
           transform: 'translateY(-1px)',
           boxShadow: `0 4px 20px ${accentColor}12, 0 0 0 1px ${accentColor}15`,
@@ -109,7 +113,7 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
         }}
       />
 
-      <Box sx={{ p: 2, position: 'relative' }}>
+      <Box sx={{ p: 2, position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Header: rank + image + name + symbol */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5 }}>
         <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 600, minWidth: 20, fontVariantNumeric: 'tabular-nums' }}>
@@ -191,7 +195,7 @@ export default function MarketCard({ coin, prevPrice, onSelect }: MarketCardProp
       </Box>
 
       {/* Stats grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.75 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.75, mt: 'auto' }}>
         <StatRow label="MCap" value={formatMarketCap(coin.marketCap)} />
         <StatRow label="Vol 24h" value={formatMarketCap(coin.volume24h)} />
         <StatRow

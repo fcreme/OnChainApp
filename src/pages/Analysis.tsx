@@ -277,13 +277,14 @@ export default function Analysis() {
                 >
                   {stat.count}
                 </Typography>
-                {results.length > 0 && stat.label !== 'Scanned' && (
+                {results.length > 0 && (
                   <Typography
                     sx={{
                       fontSize: '0.6rem',
                       color: 'text.secondary',
                       mt: 0.5,
                       fontFamily: 'monospace',
+                      visibility: stat.label === 'Scanned' ? 'hidden' : 'visible',
                     }}
                   >
                     {((stat.count / results.length) * 100).toFixed(0)}% of total

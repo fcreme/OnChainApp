@@ -15,6 +15,8 @@ import {
   IconButton,
   Skeleton,
   Button,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { SectionHeader, HudCard } from './HudPrimitives'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -122,6 +124,8 @@ const getEventColor = (type: string) => {
   }
 }
 
+const SIDEBAR_WIDTH = 210
+
 function EventsDialog({
   open,
   onClose,
@@ -133,6 +137,8 @@ function EventsDialog({
   events: AppEvent[]
   onSelectEvent: (event: AppEvent) => void
 }) {
+  const theme = useTheme()
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'))
   const reversedEvents = events.slice().reverse()
 
   return (
@@ -155,6 +161,7 @@ function EventsDialog({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              paddingLeft: isDesktop ? SIDEBAR_WIDTH : 0,
             }}
           >
             {/* Modal panel */}

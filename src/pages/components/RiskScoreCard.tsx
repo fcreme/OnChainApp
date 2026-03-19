@@ -97,6 +97,7 @@ export default function RiskScoreCard({ result, onClick }: Props) {
         overflow: 'hidden',
         position: 'relative',
         '&:hover': {
+          zIndex: 2,
           borderColor: `${color}50`,
           transform: 'translateY(-1px)',
           boxShadow: `0 4px 20px ${color}12, 0 0 0 1px ${color}15`,
