@@ -186,3 +186,35 @@ describe('MatchingEngine.scoreMatch — address', () => {
     expect(score.breakdown.address).toBe(15)
   })
 })
+
+describe('MatchingEngine.scoreMatch — time', () => {
+  it('full weight when timestamps are identical', () => {
+    const anchor = makeTx({ timestamp: '1000000' })
+    const claim = makeTx({ id: 2, timestamp: '1000000' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.time).toBe(20)
+  })
+
+  it('zero at the time-window boundary', () => {
+    // diff = 3_600_000 = window → 20 * (1 - 1) = 0
+    const anchor = makeTx({ timestamp: '1000000' })
+    const claim = makeTx({ id: 2, timestamp: '4600000' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.time).toBe(0)
+  })
+
+  it('linear decay at half the time window', () => {
+    // diff = 1_800_000 → 20 * (1 - 0.5) = 10
+    const anchor = makeTx({ timestamp: '1000000' })
+    const claim = makeTx({ id: 2, timestamp: '2800000' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.time).toBe(10)
+  })
+
+  it('zero when diff is outside the time window', () => {
+    const anchor = makeTx({ timestamp: '1000000' })
+    const claim = makeTx({ id: 2, timestamp: '6000000' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.time).toBe(0)
+  })
+})
