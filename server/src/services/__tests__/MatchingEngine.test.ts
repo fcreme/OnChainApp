@@ -49,3 +49,50 @@ describe('MatchingEngine.scoreMatch — smoke', () => {
     expect(score.breakdown).toEqual({ amount: 40, address: 30, time: 20, token: 10 })
   })
 })
+
+describe('MatchingEngine.scoreMatch — amount', () => {
+  it('full weight when amounts match exactly', () => {
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '100' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40)
+  })
+
+  it('zero amount points when diff equals tolerance boundary', () => {
+    // tolerance 1% of 100 = 1.0; diff of 1.0 → 40 * (1 - 1) = 0
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '101' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(0)
+  })
+
+  it('linear decay at half tolerance', () => {
+    // diff = 0.5, threshold = 1.0 → 40 * (1 - 0.5) = 20
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '100.5' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(20)
+  })
+
+  it('zero amount points when diff outside tolerance', () => {
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '102' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(0)
+  })
+
+  it('full points when both anchor and claim are zero (exact-match branch)', () => {
+    const anchor = makeTx({ amount_gross: '0' })
+    const claim = makeTx({ id: 2, amount_gross: '0' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40)
+  })
+
+  it('zero points when anchor amount is zero and claim is non-zero', () => {
+    // amtThreshold = 0 * 0.01 = 0; amtDiff = 1; neither branch fires
+    const anchor = makeTx({ amount_gross: '0' })
+    const claim = makeTx({ id: 2, amount_gross: '1' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(0)
+  })
+})
