@@ -135,3 +135,54 @@ describe('MatchingEngine.scoreMatch — gas-aware amount', () => {
     expect(score.breakdown.amount).toBe(40)
   })
 })
+
+describe('MatchingEngine.scoreMatch — address', () => {
+  it('full weight when both sender and receiver match', () => {
+    const anchor = makeTx({ sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(30)
+  })
+
+  it('half weight when only sender matches', () => {
+    const anchor = makeTx({ sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xAAA', receiver_address: '0xCCC' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(15)
+  })
+
+  it('half weight when only receiver matches', () => {
+    const anchor = makeTx({ sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xCCC', receiver_address: '0xBBB' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(15)
+  })
+
+  it('zero when neither address matches', () => {
+    const anchor = makeTx({ sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xCCC', receiver_address: '0xDDD' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(0)
+  })
+
+  it('case-insensitive: uppercase matches lowercase on both sides', () => {
+    const anchor = makeTx({ sender_address: '0xABC123', receiver_address: '0xDEF456' })
+    const claim = makeTx({ id: 2, sender_address: '0xabc123', receiver_address: '0xdef456' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(30)
+  })
+
+  it('null sender on anchor: sender half scores 0, receiver half still counts', () => {
+    const anchor = makeTx({ sender_address: null, receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(15)
+  })
+
+  it('null receiver on claim: receiver half scores 0, sender half still counts', () => {
+    const anchor = makeTx({ sender_address: '0xAAA', receiver_address: '0xBBB' })
+    const claim = makeTx({ id: 2, sender_address: '0xAAA', receiver_address: null })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.address).toBe(15)
+  })
+})
