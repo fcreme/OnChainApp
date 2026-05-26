@@ -218,3 +218,26 @@ describe('MatchingEngine.scoreMatch — time', () => {
     expect(score.breakdown.time).toBe(0)
   })
 })
+
+describe('MatchingEngine.scoreMatch — token', () => {
+  it('full weight when token symbols match exactly', () => {
+    const anchor = makeTx({ token_symbol: 'USDC' })
+    const claim = makeTx({ id: 2, token_symbol: 'USDC' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.token).toBe(10)
+  })
+
+  it('zero when token symbols differ', () => {
+    const anchor = makeTx({ token_symbol: 'USDC' })
+    const claim = makeTx({ id: 2, token_symbol: 'DAI' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.token).toBe(0)
+  })
+
+  it('case-sensitive: USDC and usdc do NOT match (documents current behavior)', () => {
+    const anchor = makeTx({ token_symbol: 'USDC' })
+    const claim = makeTx({ id: 2, token_symbol: 'usdc' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.token).toBe(0)
+  })
+})
