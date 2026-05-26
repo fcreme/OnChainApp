@@ -6,7 +6,15 @@
       "WebFetch(domain:api.dexscreener.com)",
       "Bash(npx tsc:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:gist.github.com)"
+      "WebFetch(domain:gist.github.com)",
+      "Bash(git -C C:/Users/felip/OnChainApp checkout -b tests/matching-engine)",
+      "Bash(git -C C:/Users/felip/OnChainApp branch --show-current)",
+      "Bash(npm run *)",
+      "Bash(git *)",
+      "Bash(npm test *)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(node *)"
     ]
   }
 }
