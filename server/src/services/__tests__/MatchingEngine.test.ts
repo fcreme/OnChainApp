@@ -241,3 +241,56 @@ describe('MatchingEngine.scoreMatch — token', () => {
     expect(score.breakdown.token).toBe(0)
   })
 })
+
+describe('MatchingEngine.scoreMatch — total + breakdown', () => {
+  it('total equals the sum of all four breakdown components', () => {
+    // Mix-and-match: amount=20 (half tolerance), address=15 (sender only),
+    // time=10 (half window), token=10 (match) → total = 55
+    const anchor = makeTx({
+      amount_gross: '100',
+      sender_address: '0xAAA',
+      receiver_address: '0xBBB',
+      timestamp: '1000000',
+      token_symbol: 'USDC',
+    })
+    const claim = makeTx({
+      id: 2,
+      amount_gross: '100.5',
+      sender_address: '0xAAA',
+      receiver_address: '0xZZZ',
+      timestamp: '2800000',
+      token_symbol: 'USDC',
+    })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown).toEqual({ amount: 20, address: 15, time: 10, token: 10 })
+    expect(score.total).toBe(55)
+  })
+
+  it('total = 100 for a perfect match with default weights', () => {
+    const anchor = makeTx()
+    const claim = makeTx({ id: 2 })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.total).toBe(100)
+  })
+
+  it('rounds breakdown values to 2 decimal places', () => {
+    // diff = 0.33, threshold = 1 → 40 * (1 - 0.33) = 26.8
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '100.33', token_symbol: 'NONE' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    // 40 * 0.67 = 26.8, round(26.8, 2) = 26.8
+    expect(score.breakdown.amount).toBeCloseTo(26.8, 2)
+  })
+
+  it('respects custom weights — amount cap of 50', () => {
+    const customConfig: MatchingConfig = {
+      weights: { amount: 50, address: 20, time: 20, token: 10 },
+      tolerances: { ...DEFAULT_TOLERANCES },
+    }
+    const anchor = makeTx()
+    const claim = makeTx({ id: 2 })
+    const score = engine.scoreMatch(anchor, claim, customConfig)
+    expect(score.breakdown).toEqual({ amount: 50, address: 20, time: 20, token: 10 })
+    expect(score.total).toBe(100)
+  })
+})
