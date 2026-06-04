@@ -96,3 +96,42 @@ describe('MatchingEngine.scoreMatch — amount', () => {
     expect(score.breakdown.amount).toBe(0)
   })
 })
+
+describe('MatchingEngine.scoreMatch — gas-aware amount', () => {
+  it('uses net amount when net matches claim better than gross', () => {
+    // anchor gross=100, net=99, gas=1; claim=99
+    // gross diff = 1, threshold = 1 → gross score = 0 (boundary)
+    // net diff = 0 → net score = 40
+    // max = 40
+    const anchor = makeTx({ amount_gross: '100', amount_net: '99', gas_used: '1' })
+    const claim = makeTx({ id: 2, amount_gross: '99' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40)
+  })
+
+  it('uses gross amount when gross matches claim better than net', () => {
+    // anchor gross=100, net=99, gas=1; claim=100
+    // gross diff = 0 → gross score = 40
+    // net diff = 1, threshold = 1 → net score = 0 (boundary)
+    // max = 40
+    const anchor = makeTx({ amount_gross: '100', amount_net: '99', gas_used: '1' })
+    const claim = makeTx({ id: 2, amount_gross: '100' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40)
+  })
+
+  it('skips gas-aware path when gas_used is null', () => {
+    // amount_net present but gas_used null → gas-aware branch requires both
+    const anchor = makeTx({ amount_gross: '100', amount_net: '99', gas_used: null })
+    const claim = makeTx({ id: 2, amount_gross: '100' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40) // gross diff = 0
+  })
+
+  it('skips gas-aware path when amount_net is null', () => {
+    const anchor = makeTx({ amount_gross: '100', amount_net: null, gas_used: '1' })
+    const claim = makeTx({ id: 2, amount_gross: '100' })
+    const score = engine.scoreMatch(anchor, claim, defaultConfig)
+    expect(score.breakdown.amount).toBe(40)
+  })
+})
