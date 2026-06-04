@@ -294,3 +294,31 @@ describe('MatchingEngine.scoreMatch — total + breakdown', () => {
     expect(score.total).toBe(100)
   })
 })
+
+describe('MatchingEngine.scoreMatch — config customization', () => {
+  it('wider amount_percent admits diffs that would otherwise be outside tolerance', () => {
+    // With default 1% tolerance, diff=4 on amount=100 → 0.
+    // With 5% tolerance, threshold = 5, score = 40 * (1 - 4/5) = 8
+    const config: MatchingConfig = {
+      weights: { ...DEFAULT_WEIGHTS },
+      tolerances: { ...DEFAULT_TOLERANCES, amount_percent: 0.05 },
+    }
+    const anchor = makeTx({ amount_gross: '100' })
+    const claim = makeTx({ id: 2, amount_gross: '104' })
+    const score = engine.scoreMatch(anchor, claim, config)
+    expect(score.breakdown.amount).toBe(8)
+  })
+
+  it('wider time_window_ms admits time diffs that would otherwise be outside', () => {
+    // Default window = 3_600_000, diff = 5_400_000 → 0
+    // Doubled window = 7_200_000 → 20 * (1 - 5_400_000/7_200_000) = 20 * 0.25 = 5
+    const config: MatchingConfig = {
+      weights: { ...DEFAULT_WEIGHTS },
+      tolerances: { ...DEFAULT_TOLERANCES, time_window_ms: 7_200_000 },
+    }
+    const anchor = makeTx({ timestamp: '1000000' })
+    const claim = makeTx({ id: 2, timestamp: '6400000' })
+    const score = engine.scoreMatch(anchor, claim, config)
+    expect(score.breakdown.time).toBe(5)
+  })
+})
