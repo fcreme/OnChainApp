@@ -8,6 +8,7 @@ import Analysis from '../Analysis'
 import Reconciliation from '../Reconciliation'
 import Audit from '../Audit'
 import Settings from '../Settings'
+import NotFound from '../NotFound'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -23,6 +24,7 @@ export default function AnimatedRoutes() {
         <Route path="/memecoins" element={<Memecoins />} />
         <Route path="/markets" element={<Markets />} />
         <Route path="/analysis" element={<Analysis />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
   )

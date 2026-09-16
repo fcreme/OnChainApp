@@ -5,6 +5,12 @@
   "installCommand": "npm install --legacy-peer-deps",
   "devCommand": "npm run dev",
   "regions": ["iad1"],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
