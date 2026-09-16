@@ -38,7 +38,7 @@ interface ReconciliationState {
   reject: (anchorId: number, claimId: number, reason?: string) => Promise<void>
   batchApprove: (pairs: Array<{ anchor_id: number; claim_id: number }>) => Promise<{ approved: number; failed: number }>
   importClaims: (claims: CreateClaim[]) => Promise<{ imported: number; failed: number }>
-  syncAnchors: () => Promise<{ imported: number }>
+  syncAnchors: (wallet: string) => Promise<{ imported: number }>
   setPage: (page: number) => void
   setMinScore: (score: number) => void
   setTokenFilter: (token: string | undefined) => void
@@ -162,10 +162,10 @@ export const useReconciliationStore = create<ReconciliationState>((set, get) => 
     }
   },
 
-  syncAnchors: async () => {
+  syncAnchors: async (wallet) => {
     set({ isSyncing: true, error: null })
     try {
-      const result = await syncAnchors('default')
+      const result = await syncAnchors(wallet)
       await get().fetchStats()
       return { imported: result.anchors_synced }
     } catch (err) {

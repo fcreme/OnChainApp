@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Container, Box, Button } from '@mui/material'
+import { useAccount } from 'wagmi'
 import {
   CompareArrows as CompareArrowsIcon,
   PlayArrow as RunIcon,
@@ -23,7 +24,7 @@ const tokenFilters = ['all', 'DAI', 'USDC'] as const
 
 export default function Reconciliation() {
   const {
-    suggestions, stats, isLoading, page, totalPages,
+    suggestions, stats, isLoading, isSyncing, page, totalPages,
     minScore, tokenFilter, statusFilter,
     setMinScore, setTokenFilter, setStatusFilter, setPage,
     fetchSuggestions, fetchStats, runMatching, approve, reject, forceReconcile, batchApprove,
@@ -32,6 +33,8 @@ export default function Reconciliation() {
 
   const { drifts, fetchDrifts } = useDriftStore()
   const { addToast } = useToastStore()
+  const { address, isConnected } = useAccount()
+  const canSync = isConnected && !!address
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [drawerSuggestion, setDrawerSuggestion] = useState<SuggestionResponse | null>(null)
@@ -59,14 +62,16 @@ export default function Reconciliation() {
   }, [runMatching, addToast, fetchSuggestions, fetchStats])
 
   const handleSyncAnchors = useCallback(async () => {
+    // The button is disabled without a wallet; this also narrows `address`.
+    if (!address) return
     try {
-      const result = await syncAnchors()
+      const result = await syncAnchors(address)
       addToast({ message: `Synced ${result.imported} anchors from chain`, severity: 'success' })
       fetchStats()
     } catch {
       addToast({ message: 'Sync failed', severity: 'error' })
     }
-  }, [syncAnchors, addToast, fetchStats])
+  }, [address, syncAnchors, addToast, fetchStats])
 
   const handleApprove = useCallback(async (s: SuggestionResponse) => {
     try {
@@ -168,15 +173,23 @@ export default function Reconciliation() {
           >
             Run Matching
           </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<SyncIcon sx={{ fontSize: '0.9rem !important' }} />}
-            onClick={handleSyncAnchors}
-            sx={{ fontSize: '0.8rem' }}
+          {/* A disabled button swallows pointer events, so the reason sits on the wrapper. */}
+          <Box
+            component="span"
+            title={canSync ? undefined : 'Connect a wallet to sync anchors'}
+            sx={{ display: 'inline-flex' }}
           >
-            Sync Anchors
-          </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SyncIcon sx={{ fontSize: '0.9rem !important' }} />}
+              onClick={handleSyncAnchors}
+              disabled={!canSync || isSyncing}
+              sx={{ fontSize: '0.8rem' }}
+            >
+              Sync Anchors
+            </Button>
+          </Box>
           <Button
             variant="outlined"
             size="small"
