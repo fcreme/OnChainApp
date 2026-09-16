@@ -80,31 +80,66 @@ export class ReconciliationService {
     actor: string,
     force: boolean = false,
   ): Promise<{ anchor: TransactionRow; claim: TransactionRow }> {
-    const anchor = await transactionService.getById(anchorId)
-    const claim = await transactionService.getById(claimId)
-
-    if (!anchor) throw new AppError(404, 'Anchor not found', 'NOT_FOUND')
-    if (!claim) throw new AppError(404, 'Claim not found', 'NOT_FOUND')
-    if (anchor.source !== 'onchain') throw new AppError(400, 'Transaction is not an anchor', 'INVALID_STATE')
-
-    if (!force) {
-      if (claim.status !== 'pending' && claim.status !== 'suggested_match') {
-        throw new AppError(400, `Claim status is '${claim.status}', expected 'pending' or 'suggested_match'`, 'INVALID_STATE')
-      }
-    }
-
-    // Get the suggestion score if it exists
-    const suggestion = await db.oneOrNone<SuggestionRow>(
-      'SELECT * FROM match_suggestions WHERE anchor_id = $1 AND claim_id = $2',
-      [anchorId, claimId],
-    )
-
-    const matchScore = suggestion ? Number(suggestion.score) : null
-    const scoreBreakdown = suggestion?.score_breakdown ?? null
     const status = force ? 'force_reconciled' : 'reconciled'
 
-    // Update both transactions in a transaction
-    const [updatedAnchor, updatedClaim] = await db.tx(async (t) => {
+    // Read, check and write inside one transaction: the ledger state the checks
+    // rely on must not change between reading it and writing the match.
+    const result = await db.tx(async (t) => {
+      // One locking read of both rows, ordered by id so concurrent approvals
+      // that share a row always take the locks in the same order.
+      const rows = await t.manyOrNone<TransactionRow>(
+        'SELECT * FROM transactions WHERE id IN ($1, $2) ORDER BY id FOR UPDATE',
+        [anchorId, claimId],
+      )
+      const anchor = rows.find((r) => r.id === anchorId) ?? null
+      const claim = rows.find((r) => r.id === claimId) ?? null
+
+      if (!anchor) throw new AppError(404, 'Anchor not found', 'NOT_FOUND')
+      if (!claim) throw new AppError(404, 'Claim not found', 'NOT_FOUND')
+
+      // ── Structural checks: these hold for a force reconcile too ──
+      if (anchorId === claimId) {
+        throw new AppError(400, 'A transaction cannot be reconciled with itself', 'INVALID_STATE')
+      }
+      if (anchor.source !== 'onchain') {
+        throw new AppError(400, 'Transaction is not an anchor', 'INVALID_STATE')
+      }
+      if (claim.source === 'onchain') {
+        throw new AppError(400, 'Claim is an on-chain anchor, not an off-chain claim', 'INVALID_STATE')
+      }
+      if (anchor.matched_tx_id !== null && anchor.matched_tx_id !== claimId) {
+        throw new AppError(409, `Anchor is already matched to claim ${anchor.matched_tx_id}`, 'CONFLICT')
+      }
+      if (claim.matched_tx_id !== null && claim.matched_tx_id !== anchorId) {
+        throw new AppError(409, `Claim is already reconciled to anchor ${claim.matched_tx_id}`, 'CONFLICT')
+      }
+
+      // ── Checks a force reconcile is allowed to override ──
+      if (!force) {
+        if (claim.status !== 'pending' && claim.status !== 'suggested_match') {
+          throw new AppError(400, `Claim status is '${claim.status}', expected 'pending' or 'suggested_match'`, 'INVALID_STATE')
+        }
+        if (anchor.type !== claim.type) {
+          throw new AppError(400, `Type mismatch: anchor is '${anchor.type}', claim is '${claim.type}'`, 'INVALID_STATE')
+        }
+        const rejected = await t.oneOrNone<{ id: number }>(
+          'SELECT id FROM rejected_pairs WHERE anchor_id = $1 AND claim_id = $2',
+          [anchorId, claimId],
+        )
+        if (rejected) {
+          throw new AppError(400, 'This pair was rejected; use a force reconcile to override', 'INVALID_STATE')
+        }
+      }
+
+      // Get the suggestion score if it exists
+      const suggestion = await t.oneOrNone<SuggestionRow>(
+        'SELECT * FROM match_suggestions WHERE anchor_id = $1 AND claim_id = $2',
+        [anchorId, claimId],
+      )
+
+      const matchScore = suggestion ? Number(suggestion.score) : null
+      const scoreBreakdown = suggestion?.score_breakdown ?? null
+
       const a = await t.one<TransactionRow>(
         `UPDATE transactions SET
            matched_tx_id = $2, match_score = $3, score_breakdown = $4,
@@ -131,7 +166,13 @@ export class ReconciliationService {
         )
       }
 
-      return [a, c]
+      return {
+        anchor: a,
+        claim: c,
+        matchScore,
+        previousStatus: claim.status,
+        previousMatch: claim.matched_tx_id,
+      }
     })
 
     await auditService.log(
@@ -139,11 +180,11 @@ export class ReconciliationService {
       'transaction',
       claimId,
       actor,
-      { status: claim.status, matched_tx_id: claim.matched_tx_id },
-      { status, matched_tx_id: anchorId, match_score: matchScore },
+      { status: result.previousStatus, matched_tx_id: result.previousMatch },
+      { status, matched_tx_id: anchorId, match_score: result.matchScore },
     )
 
-    return { anchor: updatedAnchor, claim: updatedClaim }
+    return { anchor: result.anchor, claim: result.claim }
   }
 
   // ── Reject a match suggestion ──
