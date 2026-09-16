@@ -26,12 +26,14 @@ router.get('/:wallet', async (req, res, next) => {
 // POST /drift/sync — Force recompute all drifts
 router.post('/sync', async (_req, res, next) => {
   try {
-    const drifts = await driftService.syncAll()
+    const { drifts, errors } = await driftService.syncAll()
     res.json({
       success: true,
       data: {
         synced: drifts.length,
+        failed: errors.length,
         drifts,
+        errors,
       },
     })
   } catch (err) {

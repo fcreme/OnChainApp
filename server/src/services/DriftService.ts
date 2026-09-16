@@ -4,6 +4,7 @@ import { auditService } from './AuditService.js'
 import { createPublicClient, http, formatUnits } from 'viem'
 import { sepolia } from 'viem/chains'
 import { env } from '../config/env.js'
+import { AppError } from '../middleware/errorHandler.js'
 
 const ERC20_BALANCE_ABI = [
   {
@@ -26,11 +27,61 @@ export interface DriftResult {
   last_updated: string
 }
 
+export interface DriftSyncError {
+  wallet: string
+  token_symbol: string
+  error: string
+}
+
+export interface DriftThresholds {
+  alert_percent: number
+  critical_percent: number
+}
+
+// The only part of the viem public client this service uses.
+export interface OnchainBalanceReader {
+  readContract(args: {
+    address: `0x${string}`
+    abi: typeof ERC20_BALANCE_ABI
+    functionName: 'balanceOf'
+    args: readonly [`0x${string}`]
+  }): Promise<bigint>
+}
+
+export function classifyDrift(
+  driftPercentage: number,
+  thresholds: DriftThresholds,
+): DriftResult['alert_level'] {
+  if (Math.abs(driftPercentage) >= thresholds.critical_percent) return 'critical'
+  if (Math.abs(driftPercentage) >= thresholds.alert_percent) return 'warning'
+  return 'none'
+}
+
+// Drift between the two balances. The percentage divides by the larger magnitude, so an
+// on-chain balance of 0 against a non-zero ledger is -100% rather than a silent 0%.
+export function evaluateDrift(
+  onchainBalance: number,
+  internalBalance: number,
+  thresholds: DriftThresholds,
+): { drift: number; drift_percentage: number; alert_level: DriftResult['alert_level'] } {
+  const drift = onchainBalance - internalBalance
+  const scale = Math.max(Math.abs(onchainBalance), Math.abs(internalBalance))
+  const driftPercentage = scale === 0 ? 0 : (drift / scale) * 100
+
+  return {
+    drift,
+    drift_percentage: driftPercentage,
+    alert_level: classifyDrift(driftPercentage, thresholds),
+  }
+}
+
 export class DriftService {
-  private client = createPublicClient({
-    chain: sepolia,
-    transport: http(env.SEPOLIA_RPC_URL),
-  })
+  constructor(
+    private client: OnchainBalanceReader = createPublicClient({
+      chain: sepolia,
+      transport: http(env.SEPOLIA_RPC_URL),
+    }),
+  ) {}
 
   // ── Compute drift for a single wallet+token ──
   async computeDrift(wallet: string, tokenSymbol: string): Promise<DriftResult> {
@@ -51,38 +102,44 @@ export class DriftService {
 
     const internalBalance = Number(internalResult.balance)
 
-    // 2. Fetch on-chain balance
+    // 2. Fetch on-chain balance — an unreadable balance is an error, never a 0, so a bad
+    //    read can neither raise a false 0% drift nor overwrite the last good stored value.
     const tokenInfo = SEPOLIA_TOKENS[tokenSymbol]
-    let onchainBalance = 0
-
-    if (tokenInfo) {
-      try {
-        const raw = await this.client.readContract({
-          address: tokenInfo.address as `0x${string}`,
-          abi: ERC20_BALANCE_ABI,
-          functionName: 'balanceOf',
-          args: [wallet as `0x${string}`],
-        })
-        onchainBalance = Number(formatUnits(raw, tokenInfo.decimals))
-      } catch (err) {
-        console.error(`Failed to fetch on-chain balance for ${wallet}/${tokenSymbol}:`, err)
-      }
+    if (!tokenInfo) {
+      throw new AppError(
+        502,
+        `No on-chain address configured for token ${tokenSymbol}`,
+        'ONCHAIN_READ_FAILED',
+      )
     }
 
-    // 3. Calculate drift
-    const drift = onchainBalance - internalBalance
-    const driftPct = onchainBalance !== 0 ? (drift / onchainBalance) * 100 : 0
+    let onchainBalance: number
+    try {
+      const raw = await this.client.readContract({
+        address: tokenInfo.address as `0x${string}`,
+        abi: ERC20_BALANCE_ABI,
+        functionName: 'balanceOf',
+        args: [wallet as `0x${string}`],
+      })
+      onchainBalance = Number(formatUnits(raw, tokenInfo.decimals))
+    } catch (err) {
+      throw new AppError(
+        502,
+        `Failed to fetch on-chain balance for ${wallet}/${tokenSymbol}`,
+        'ONCHAIN_READ_FAILED',
+        { reason: err instanceof Error ? err.message : String(err) },
+      )
+    }
 
-    // 4. Determine alert level
+    // 3. Calculate drift and alert level
     const thresholds = await this.getThresholds()
-    let alertLevel: DriftResult['alert_level'] = 'none'
-    if (Math.abs(driftPct) >= thresholds.critical_percent) {
-      alertLevel = 'critical'
-    } else if (Math.abs(driftPct) >= thresholds.alert_percent) {
-      alertLevel = 'warning'
-    }
+    const { drift, drift_percentage: driftPct, alert_level: alertLevel } = evaluateDrift(
+      onchainBalance,
+      internalBalance,
+      thresholds,
+    )
 
-    // 5. Upsert wallet_balances
+    // 4. Upsert wallet_balances
     await db.none(`
       INSERT INTO wallet_balances (wallet_address, token_symbol, internal_balance, onchain_balance, drift, drift_percentage)
       VALUES ($1, $2, $3, $4, $5, $6)
@@ -94,7 +151,7 @@ export class DriftService {
         last_updated = NOW()
     `, [wallet, tokenSymbol, internalBalance, onchainBalance, drift, driftPct])
 
-    // 6. Log drift alert if triggered
+    // 5. Log drift alert if triggered
     if (alertLevel !== 'none') {
       await auditService.log(
         'drift_alert',
@@ -124,7 +181,9 @@ export class DriftService {
   }
 
   // ── Sync drift for all known wallets ──
-  async syncAll(): Promise<DriftResult[]> {
+  // Wallets whose on-chain balance could not be read are reported rather than skipped
+  // in silence, so an RPC outage cannot look like a clean run with nothing to alert on.
+  async syncAll(): Promise<{ drifts: DriftResult[]; errors: DriftSyncError[] }> {
     // Get unique wallets from transactions
     const wallets = await db.manyOrNone<{ wallet: string; token: string }>(`
       SELECT DISTINCT
@@ -134,17 +193,22 @@ export class DriftService {
       WHERE sender_address IS NOT NULL OR receiver_address IS NOT NULL
     `)
 
-    const results: DriftResult[] = []
+    const drifts: DriftResult[] = []
+    const errors: DriftSyncError[] = []
     for (const { wallet, token } of wallets) {
       try {
-        const drift = await this.computeDrift(wallet, token)
-        results.push(drift)
+        drifts.push(await this.computeDrift(wallet, token))
       } catch (err) {
         console.error(`Drift computation failed for ${wallet}/${token}:`, err)
+        errors.push({
+          wallet,
+          token_symbol: token,
+          error: err instanceof Error ? err.message : String(err),
+        })
       }
     }
 
-    return results
+    return { drifts, errors }
   }
 
   // ── Get all drift records ──
@@ -163,9 +227,6 @@ export class DriftService {
 
     return rows.map((r) => {
       const pct = Number(r.drift_percentage)
-      let alertLevel: DriftResult['alert_level'] = 'none'
-      if (Math.abs(pct) >= thresholds.critical_percent) alertLevel = 'critical'
-      else if (Math.abs(pct) >= thresholds.alert_percent) alertLevel = 'warning'
 
       return {
         wallet_address: r.wallet_address,
@@ -174,7 +235,7 @@ export class DriftService {
         onchain_balance: r.onchain_balance,
         drift: r.drift,
         drift_percentage: pct,
-        alert_level: alertLevel,
+        alert_level: classifyDrift(pct, thresholds),
         last_updated: r.last_updated,
       }
     })
@@ -196,9 +257,6 @@ export class DriftService {
 
     return rows.map((r) => {
       const pct = Number(r.drift_percentage)
-      let alertLevel: DriftResult['alert_level'] = 'none'
-      if (Math.abs(pct) >= thresholds.critical_percent) alertLevel = 'critical'
-      else if (Math.abs(pct) >= thresholds.alert_percent) alertLevel = 'warning'
 
       return {
         wallet_address: r.wallet_address,
@@ -207,7 +265,7 @@ export class DriftService {
         onchain_balance: r.onchain_balance,
         drift: r.drift,
         drift_percentage: pct,
-        alert_level: alertLevel,
+        alert_level: classifyDrift(pct, thresholds),
         last_updated: r.last_updated,
       }
     })
