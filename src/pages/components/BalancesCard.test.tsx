@@ -1,158 +1,156 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material/styles'
+import { sepolia } from 'wagmi/chains'
+import { theme } from '../../theme'
+import { useAppStore } from '../store/useAppStore'
+import { useCustomTokensStore } from '../../stores/useCustomTokensStore'
 import BalancesCard from './BalancesCard'
 
-// Mock wagmi hooks
-vi.mock('wagmi', () => ({
-  useAccount: vi.fn(),
-  useChainId: vi.fn(),
-}))
+// src/lib/web3 builds a live wagmi config and boots the WalletConnect/AppKit
+// modal (a real HTTP call) at import time. AddTokenDialog pulls it in, so stub
+// the one export it uses — wallet/RPC wiring is genuinely external.
+vi.mock('../../lib/web3', () => ({ config: {} }))
 
-// Mock the store
-vi.mock('../store/useAppStore', () => ({
-  useAppStore: vi.fn(),
-}))
+// jsdom has no ResizeObserver; the card observes its scroller with one.
+class NoopResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver = globalThis.ResizeObserver ?? (NoopResizeObserver as never)
 
-// Mock sepolia chain
-vi.mock('wagmi/chains', () => ({
-  sepolia: { id: 11155111 },
-}))
+// useAppStore is mocked globally in src/setupTests.ts; drive it per test.
+const mockUseAppStore = useAppStore as unknown as Mock
+
+type StoreOverrides = {
+  balances?: Record<string, string>
+  fetchBalances?: Mock
+  isConnected?: boolean
+  chainId?: number
+  isLoadingBalances?: boolean
+}
+
+function setStore(overrides: StoreOverrides = {}) {
+  const full = {
+    balances: { DAI: '0', USDC: '0' },
+    fetchBalances: vi.fn(),
+    isConnected: true,
+    chainId: sepolia.id,
+    isLoadingBalances: false,
+    ...overrides,
+  }
+  mockUseAppStore.mockImplementation((selector?: (s: typeof full) => unknown) =>
+    selector ? selector(full) : full
+  )
+  return full
+}
+
+function renderCard() {
+  return render(
+    <ThemeProvider theme={theme}>
+      <BalancesCard />
+    </ThemeProvider>
+  )
+}
 
 describe('BalancesCard', () => {
-  const mockUseAppStore = vi.fn()
-  const mockUseAccount = vi.fn()
-  const mockUseChainId = vi.fn()
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    
-    // Setup default mocks
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '0', USDC: '0' },
-      balancesLoading: false,
-      fetchBalances: vi.fn(),
-    })
-    
-    mockUseAccount.mockReturnValue({
-      isConnected: false,
-    })
-    
-    mockUseChainId.mockReturnValue(1) // Mainnet by default
-
-    // Apply mocks
-    vi.doMock('../store/useAppStore', () => ({
-      useAppStore: mockUseAppStore,
-    }))
-    
-    vi.doMock('wagmi', () => ({
-      useAccount: mockUseAccount,
-      useChainId: mockUseChainId,
-    }))
+    useCustomTokensStore.setState({ tokens: [] })
+    setStore()
   })
 
-  it('should render token balances title', () => {
-    render(<BalancesCard />)
-    expect(screen.getByText('Token Balances')).toBeInTheDocument()
-  })
+  it('asks the user to connect instead of showing balances when disconnected', () => {
+    const store = setStore({ isConnected: false })
 
-  it('should show connect wallet message when not connected', () => {
-    mockUseAccount.mockReturnValue({ isConnected: false })
-    
-    render(<BalancesCard />)
+    renderCard()
+
     expect(screen.getByText('Connect your wallet to see balances')).toBeInTheDocument()
+    expect(screen.queryByTestId('dai-balance')).not.toBeInTheDocument()
+    expect(store.fetchBalances).not.toHaveBeenCalled()
   })
 
-  it('should show wrong network message when on wrong network', () => {
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(1) // Mainnet instead of Sepolia
-    
-    render(<BalancesCard />)
+  it('asks the user to switch network instead of fetching on the wrong chain', () => {
+    const store = setStore({ chainId: 1 })
+
+    renderCard()
+
     expect(screen.getByText('Please switch to Sepolia network')).toBeInTheDocument()
+    expect(screen.queryByTestId('dai-balance')).not.toBeInTheDocument()
+    expect(store.fetchBalances).not.toHaveBeenCalled()
   })
 
-  it('should show loading state when fetching balances', () => {
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '0', USDC: '0' },
-      balancesLoading: true,
-      fetchBalances: vi.fn(),
-    })
-    
-    render(<BalancesCard />)
-    expect(screen.getByText('Loading balances...')).toBeInTheDocument()
+  it('fetches balances on mount once connected to Sepolia', () => {
+    const store = setStore()
+
+    renderCard()
+
+    expect(store.fetchBalances).toHaveBeenCalledTimes(1)
   })
 
-  it('should display balances when connected to correct network', () => {
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '100.5', USDC: '50.25' },
-      balancesLoading: false,
-      fetchBalances: vi.fn(),
-    })
-    
-    render(<BalancesCard />)
-    expect(screen.getByText('DAI: 100.5')).toBeInTheDocument()
-    expect(screen.getByText('USDC: 50.25')).toBeInTheDocument()
+  it('shows placeholders and hides the refresh control while balances load', () => {
+    setStore({ isLoadingBalances: true })
+
+    renderCard()
+
+    expect(screen.getByText('Token Balances')).toBeInTheDocument()
+    expect(screen.queryByTestId('refresh-balances')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('dai-balance')).not.toBeInTheDocument()
   })
 
-  it('should show refresh button when connected to correct network', () => {
-    const mockFetchBalances = vi.fn()
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '100', USDC: '50' },
-      balancesLoading: false,
-      fetchBalances: mockFetchBalances,
-    })
-    
-    render(<BalancesCard />)
-    const refreshButton = screen.getByText('Refresh')
-    expect(refreshButton).toBeInTheDocument()
+  it('shows each built-in token balance with thousands separators and 2 decimals', () => {
+    setStore({ balances: { DAI: '1234.5', USDC: '50.256789' } })
+
+    renderCard()
+
+    expect(screen.getByTestId('dai-balance')).toHaveTextContent('1,234.50')
+    expect(screen.getByTestId('usdc-balance')).toHaveTextContent('50.2568')
+    expect(screen.getByText('DAI Balance')).toBeInTheDocument()
+    expect(screen.getByText('USDC Balance')).toBeInTheDocument()
   })
 
-  it('should call fetchBalances when refresh button is clicked', () => {
-    const mockFetchBalances = vi.fn()
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '100', USDC: '50' },
-      balancesLoading: false,
-      fetchBalances: mockFetchBalances,
-    })
-    
-    render(<BalancesCard />)
-    const refreshButton = screen.getByText('Refresh')
-    
-    fireEvent.click(refreshButton)
-    expect(mockFetchBalances).toHaveBeenCalledTimes(1)
+  it('shows 0.00 for a zero or unparseable balance', () => {
+    setStore({ balances: { DAI: '0', USDC: 'n/a' } })
+
+    renderCard()
+
+    expect(screen.getByTestId('dai-balance')).toHaveTextContent('0.00')
+    expect(screen.getByTestId('usdc-balance')).toHaveTextContent('0.00')
   })
 
-  it('should not show refresh button when loading', () => {
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '100', USDC: '50' },
-      balancesLoading: true,
-      fetchBalances: vi.fn(),
-    })
-    
-    render(<BalancesCard />)
-    expect(screen.queryByText('Refresh')).not.toBeInTheDocument()
+  it('re-fetches balances when the refresh control is used', () => {
+    const store = setStore()
+
+    renderCard()
+    const callsAfterMount = store.fetchBalances.mock.calls.length
+
+    fireEvent.click(screen.getByTestId('refresh-balances'))
+
+    expect(store.fetchBalances.mock.calls.length).toBe(callsAfterMount + 1)
   })
 
-  it('should handle zero balances display', () => {
-    mockUseAccount.mockReturnValue({ isConnected: true })
-    mockUseChainId.mockReturnValue(11155111) // Sepolia
-    mockUseAppStore.mockReturnValue({
-      balances: { DAI: '0', USDC: '0' },
-      balancesLoading: false,
-      fetchBalances: vi.fn(),
+  it('shows a card for each custom token alongside the built-in ones', () => {
+    useCustomTokensStore.setState({
+      tokens: [
+        { address: '0x3333333333333333333333333333333333333333', symbol: 'WAGMI', name: 'Wagmi Token', decimals: 18 },
+      ],
     })
-    
-    render(<BalancesCard />)
-    expect(screen.getByText('DAI: 0')).toBeInTheDocument()
-    expect(screen.getByText('USDC: 0')).toBeInTheDocument()
+    setStore({ balances: { DAI: '0', USDC: '0', WAGMI: '7.5' } })
+
+    renderCard()
+
+    expect(screen.getByText('WAGMI')).toBeInTheDocument()
+    expect(screen.getByText('Wagmi Token')).toBeInTheDocument()
+    expect(screen.getByText('7.50')).toBeInTheDocument()
+  })
+
+  it('opens the add-token dialog from the "Add token" card', () => {
+    renderCard()
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Add token'))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })
