@@ -134,6 +134,7 @@ export class MatchingEngine {
         Number(anchor.timestamp),
         config.tolerances.amount_percent,
         config.tolerances.time_window_ms,
+        anchor.type,
       )
 
       for (const claim of candidates) {

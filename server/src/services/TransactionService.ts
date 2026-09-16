@@ -5,6 +5,7 @@ import type {
   TransactionRow,
   CreateClaim,
   TransactionQuery,
+  TransactionType,
 } from '../models/Transaction.js'
 
 export class TransactionService {
@@ -243,6 +244,9 @@ export class TransactionService {
   }
 
   // ── Get candidate claims for an anchor (pre-filtered) ──
+  // A claim only qualifies when its type equals the anchor's: an Approval
+  // anchor must never be paired with a Transfer claim, however close the
+  // token, amount, addresses and timestamp are.
   async getCandidateClaims(
     anchorId: number,
     anchorToken: string,
@@ -250,6 +254,7 @@ export class TransactionService {
     anchorTimestamp: number,
     amountPercent: number,
     timeWindowMs: number,
+    anchorType: TransactionType,
   ): Promise<TransactionRow[]> {
     const amountLo = anchorAmount * (1 - amountPercent)
     const amountHi = anchorAmount * (1 + amountPercent)
@@ -262,6 +267,7 @@ export class TransactionService {
        WHERE c.source != 'onchain'
          AND c.status = 'pending'
          AND c.token_symbol = $1
+         AND c.type = $8
          AND c.amount_gross BETWEEN $2 AND $3
          AND c.timestamp BETWEEN $4 AND $5
          AND NOT EXISTS (
@@ -270,7 +276,7 @@ export class TransactionService {
          )
        ORDER BY ABS(c.amount_gross - $7) ASC
        LIMIT 50`,
-      [anchorToken, amountLo, amountHi, timeLo, timeHi, anchorId, anchorAmount],
+      [anchorToken, amountLo, amountHi, timeLo, timeHi, anchorId, anchorAmount, anchorType],
     )
   }
 
